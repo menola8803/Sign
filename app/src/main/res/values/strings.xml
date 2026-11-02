@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English is the default language. Swedish is in values-sv. -->
+<resources>
+    <string name="app_name">Sign</string>
+    <string name="tagline">SIGN WORD &amp; PDF</string>
+    <string name="developer_line">Developer: Claes Sundman S.N.C AB</string>
+    <string name="company_full">Scandinavian Nexum Consulting AB</string>
+    <string name="on_device_caps">SIGNED ON YOUR DEVICE</string>
+    <string name="splash_documents">DOCUMENTS</string>
+    <string name="splash_sign">SIGNATURE</string>
+    <string name="splash_photo">PHOTO</string>
+    <string name="unknown_value">unknown</string>
+
+    <!-- Home -->
+    <string name="home_headline_1">Sign documents</string>
+    <string name="home_headline_2">right where they should be signed.</string>
+    <string name="open_document">Open document</string>
+    <string name="open_document_sub">PDF or Word (.docx)</string>
+    <string name="settings">Settings</string>
+    <string name="dev_title">Development</string>
+    <string name="dev_sub">Updates &amp; versions</string>
+    <string name="privacy_note">Everything happens on your phone. Documents, signatures and photos are never uploaded anywhere.</string>
+    <string name="version_line">Version %1$s</string>
+    <string name="profile_name_photo">%1$s · with photo</string>
+    <string name="profile_photo_only">Photo added · no name yet</string>
+    <string name="profile_empty">Name, photo, stamps and language</string>
+
+    <!-- Document -->
+    <string name="loading">Loading document…</string>
+    <string name="loading_page">Preparing page %1$d of %2$d…</string>
+    <string name="doc_meta">%1$s · %2$d pages</string>
+    <string name="docx_note">save as Word or PDF</string>
+    <string name="unsupported">That file type is not supported. Choose a PDF or a Word file (.docx).</string>
+    <string name="open_protected">The PDF is password protected and cannot be opened.</string>
+    <string name="open_failed">Could not read the document.</string>
+    <string name="add_signature">Signature</string>
+    <string name="add_stamp">Stamp</string>
+    <string name="save_signed">Save</string>
+    <string name="tap_to_place">Tap the page where the signature should go</string>
+    <string name="tap_to_place_stamp">Tap the page where the stamp should go</string>
+    <string name="no_fields">Tap Signature, then tap where on the page you want to sign.</string>
+    <string name="tap_to_sign">Tap to sign</string>
+    <string name="choose_stamp">Choose stamp</string>
+    <string name="nothing_to_save">Sign the document first.</string>
+    <string name="exporting">Creating signed document…</string>
+    <string name="unsigned_fields">Some signature fields are not signed yet. Save anyway?</string>
+    <string name="save_anyway">Save anyway</string>
+    <string name="saved_title">Signed document ready</string>
+    <string name="saved_message">%1$s is ready. Save it to your phone, share it or open it.</string>
+    <string name="save_to_device">Save</string>
+    <string name="share">Share</string>
+    <string name="open_pdf">Open</string>
+    <string name="no_pdf_app">No app for opening PDF files was found.</string>
+    <string name="saved">Saved.</string>
+    <string name="export_failed">Something went wrong while creating the PDF.</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove">Remove</string>
+
+    <!-- Signing -->
+    <string name="sign_title">Sign</string>
+    <string name="sign_where">Field %1$d · page %2$d</string>
+    <string name="sign_here">SIGN HERE</string>
+    <string name="sign_empty">Draw your signature first.</string>
+    <string name="undo">Undo</string>
+    <string name="clear">Clear</string>
+    <string name="done">Done</string>
+    <string name="ink_blue">Blue ink</string>
+    <string name="ink_black">Black ink</string>
+
+    <!-- Camera -->
+    <string name="camera_hint">Keep your face inside the frame</string>
+    <string name="camera_permission">Sign needs the camera to take your photo.</string>
+    <string name="camera_error">Could not use the camera.</string>
+
+    <!-- Settings -->
+    <string name="language_section">LANGUAGE</string>
+    <string name="language_en">English</string>
+    <string name="language_sv">Svenska</string>
+    <string name="signature_section">SIGNATURE</string>
+    <string name="name_label">Name below the signature</string>
+    <string name="name_hint">e.g. Claes Sundman</string>
+    <string name="show_name">Show name below the signature</string>
+    <string name="show_date">Date is always shown below the signature</string>
+    <string name="photo_section">PHOTO</string>
+    <string name="photo_desc">Take a photo with the front camera. It is placed next to your signature and scaled so that everything fits in the field.</string>
+    <string name="photo_take">Take photo</string>
+    <string name="photo_retake">Retake photo</string>
+    <string name="photo_remove">Remove photo</string>
+    <string name="photo_remove_confirm">Remove your photo?</string>
+    <string name="include_photo">Place photo next to my signature</string>
+    <string name="stamps_section">STAMPS &amp; SEALS</string>
+    <string name="stamps_desc">The Scandinavian Nexum Consulting AB seal is built in. Add more stamps as images; PNG with a transparent background looks best.</string>
+    <string name="add_stamp_image">+ Add stamp</string>
+    <string name="stamp_builtin">Built-in seal</string>
+    <string name="stamp_own">Your stamp</string>
+    <string name="stamp_failed">Could not read the image.</string>
+    <string name="updates_section">UPDATES</string>
+    <string name="version">Version</string>
+    <string name="version_value">%1$s (build %2$d)</string>
+    <string name="update_check">Check for updates</string>
+    <string name="update_auto">Check automatically once a day</string>
+    <string name="update_never">Not checked yet.</string>
+    <string name="update_last">Last checked %1$s.</string>
+    <string name="update_searching">Checking for updates…</string>
+    <string name="update_available">Version %1$s is available.</string>
+    <string name="update_latest">You have the latest version.</string>
+    <string name="update_download">Download %1$s</string>
+    <string name="update_no_net">Could not reach GitHub. Check your internet connection.</string>
+    <string name="update_none_published">No version has been published yet.</string>
+    <string name="update_http">GitHub answered with error %1$d.</string>
+    <string name="update_bad_version">The release has no build number.</string>
+    <string name="update_dialog_title">New version of Sign</string>
+    <string name="update_dialog_message">Version %1$s is available. You have %2$s.\n\nThe APK downloads in your browser. Open it to install the update.</string>
+    <string name="update_later">Later</string>
+    <string name="update_whats_new">What\'s new</string>
+    <string name="update_no_browser">No browser found. Open %1$s yourself.</string>
+    <string name="developer_section">DEVELOPER</string>
+    <string name="all_versions">All versions</string>
+    <string name="show_on_github">Show on GitHub</string>
+
+    <!-- Development -->
+    <string name="dev_headline_1">Updates and</string>
+    <string name="dev_headline_2">what each version brings.</string>
+    <string name="installed_version">Installed version</string>
+    <string name="latest_version">Latest version on GitHub</string>
+    <string name="this_version">THIS VERSION</string>
+    <string name="newer_versions">NEW IN THE UPDATE</string>
+    <string name="previous_versions">PREVIOUS VERSIONS</string>
+    <string name="no_previous">No previous versions yet. This is the first release.</string>
+    <string name="changes_title">LATEST CHANGES</string>
+    <string name="changes_loading">Loading…</string>
+    <string name="changes_failed">Could not load. Check your internet connection.</string>
+    <string name="what_it_means">WHAT THE UPDATE MEANS</string>
+    <string name="what_it_contains">WHAT IT CONTAINS</string>
+    <string name="released_on">Released %1$s</string>
+    <string name="badge_installed">Installed</string>
+    <string name="badge_new">New</string>
+    <string name="type_new">NEW</string>
+    <string name="type_improved">IMPROVED</string>
+    <string name="type_fixed">FIXED</string>
+    <string name="about_section">ABOUT SIGN</string>
+    <string name="about_docs_title">PDF and Word</string>
+    <string name="about_docs_body">Open a PDF or a Word document (.docx). PDF files keep their text and quality; Word documents can be saved as Word or PDF.</string>
+    <string name="about_sign_title">Sign in the right place</string>
+    <string name="about_sign_body">Tap where the signature should go, move and resize the field with your finger. The screen turns sideways so you have room to sign.</string>
+    <string name="about_photo_title">Photo with the signature</string>
+    <string name="about_photo_body">A photo from the front camera is placed next to the signature, and the name and date are written below it.</string>
+    <string name="about_seal_title">Seal and stamps</string>
+    <string name="about_seal_body">The Scandinavian Nexum Consulting AB seal is built in, and you can add your own stamps.</string>
+
+    <!-- Photo, signer, formats, contacts -->
+    <string name="add_photo">Photo</string>
+    <string name="tap_to_place_photo">Tap the page where the photo should go</string>
+    <string name="photo_missing">You have not taken a photo yet. Take one in Settings.</string>
+    <string name="me">Me</string>
+    <string name="signer_me">Me – %1$s</string>
+    <string name="who_signs">Who signs?</string>
+    <string name="choose_format">Save as</string>
+    <string name="format_docx">Word (.docx)</string>
+    <string name="format_pdf">PDF</string>
+    <string name="send_to_contact">Send to contact</string>
+    <string name="mail_subject">Signed: %1$s</string>
+    <string name="mail_body">Hi %1$s,
+
+Here is the signed document.
+
+Best regards
+%2$s</string>
+    <string name="auto_seal">S.N.C logo in the top left corner</string>
+    <string name="contacts">Contacts</string>
+    <string name="contacts_sub">Name, email and phone</string>
+    <string name="contacts_count">%1$d contacts</string>
+    <string name="contacts_section">CONTACTS</string>
+    <string name="contacts_note">Contacts are stored only on this phone.</string>
+    <string name="no_contacts">No contacts yet. Add someone with name, email and phone.</string>
+    <string name="contact_add">Add contact</string>
+    <string name="contact_add_plus">+ Add contact</string>
+    <string name="contact_edit">Edit</string>
+    <string name="contact_email">Send email</string>
+    <string name="contact_call">Call</string>
+    <string name="contact_name">Name</string>
+    <string name="contact_email_hint">Email</string>
+    <string name="contact_phone_hint">Phone</string>
+    <string name="contact_need_name">Enter a name</string>
+    <string name="contact_bad_email">Check the email address</string>
+    <string name="contact_saved">Contact saved.</string>
+    <string name="contact_remove_confirm">Remove %1$s from your contacts?</string>
+</resources>

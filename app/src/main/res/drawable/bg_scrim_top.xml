@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tonad övergång från appens mörka bakgrund ner i innehållet -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="270" android:startColor="#FF0F1A1C" android:centerColor="#990F1A1C" android:endColor="#000F1A1C" />
+</shape>

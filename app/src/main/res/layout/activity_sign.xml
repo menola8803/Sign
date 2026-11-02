@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Signering i liggande läge på ljus pappersbakgrund -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/signRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/paper_light"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp">
+
+        <TextView
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_paper_pill"
+            android:fontFamily="@font/jakarta_bold"
+            android:gravity="center"
+            android:paddingHorizontal="18dp"
+            android:text="@string/cancel"
+            android:textColor="@color/paper_ink"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/cinzel_bold"
+                android:letterSpacing="0.2"
+                android:text="@string/sign_title"
+                android:textColor="@color/paper_ink"
+                android:textSize="18sp" />
+            <TextView
+                android:id="@+id/signWhere"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:textColor="#6B7590"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/inkBlue"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="@drawable/bg_ink_blue"
+            android:contentDescription="@string/ink_blue" />
+        <View
+            android:id="@+id/inkBlack"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_ink_black"
+            android:contentDescription="@string/ink_black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
+
+        <ImageView
+            android:id="@+id/signPhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="12dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/photo_section"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/bg_paper_pad">
+
+            <!-- Linje och kryss att signera på -->
+            <LinearLayout
+                android:id="@+id/signHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginHorizontal="28dp"
+                android:layout_marginBottom="44dp"
+                android:gravity="bottom"
+                android:orientation="horizontal">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="✕" android:textColor="#9AA3BA" android:textSize="22sp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:letterSpacing="0.14"
+                    android:text="@string/sign_here"
+                    android:textColor="#9AA3BA"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_gravity="bottom"
+                android:layout_marginHorizontal="28dp"
+                android:layout_marginBottom="40dp"
+                android:background="#C6CBD8" />
+
+            <se.snc.sign.SignatureView
+                android:id="@+id/pad"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp">
+
+        <TextView
+            android:id="@+id/btnUndo"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_paper_pill"
+            android:fontFamily="@font/jakarta_bold"
+            android:gravity="center"
+            android:paddingHorizontal="18dp"
+            android:text="@string/undo"
+            android:textColor="@color/paper_ink"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/btnClear"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_paper_pill"
+            android:fontFamily="@font/jakarta_bold"
+            android:gravity="center"
+            android:paddingHorizontal="18dp"
+            android:text="@string/clear"
+            android:textColor="@color/paper_ink"
+            android:textSize="14sp" />
+
+        <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/btnDone"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_gold_pill"
+            android:fontFamily="@font/jakarta_bold"
+            android:gravity="center"
+            android:paddingHorizontal="30dp"
+            android:text="@string/done"
+            android:textColor="@color/on_gold"
+            android:textSize="14sp" />
+    </LinearLayout>
+</LinearLayout>

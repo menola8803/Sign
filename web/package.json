@@ -1,0 +1,17 @@
+{
+  "name": "snc-sign",
+  "version": "1.0.0",
+  "private": true,
+  "description": "S.N.C Sign – signera Word- och PDF-dokument",
+  "author": "Claes Sundman, S.N.C AB",
+  "scripts": {
+    "vendor": "node vendor.mjs"
+  },
+  "dependencies": {
+    "docx-preview": "^0.4.1",
+    "html2canvas": "^1.4.1",
+    "jszip": "^3.10.2",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.10.38"
+  }
+}

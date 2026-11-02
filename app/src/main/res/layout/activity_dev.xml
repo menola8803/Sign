@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/devRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:id="@+id/btnBack"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_gravity="start"
+                android:background="?android:attr/selectableItemBackground"
+                android:fontFamily="@font/jakarta_bold"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="4dp"
+                android:textColor="@color/ink"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:layout_width="112dp"
+                android:layout_height="112dp"
+                android:layout_marginTop="8dp"
+                android:contentDescription="Sign"
+                android:src="@drawable/sign_logo" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/cinzel_bold"
+                android:letterSpacing="0.32"
+                android:shadowColor="#4DE8B04A"
+                android:shadowRadius="18"
+                android:text="SIGN"
+                android:textColor="@color/gold"
+                android:textSize="34sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/developer_line"
+                android:textColor="@color/muted"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/headline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:fontFamily="@font/jakarta_bold"
+                android:lineSpacingExtra="2dp"
+                android:textColor="@color/ink"
+                android:textSize="24sp" />
+
+            <!-- Version och uppdatering -->
+            <TextView style="@style/Sign.Section" android:text="@string/updates_section" />
+            <LinearLayout style="@style/Sign.Card">
+                <TextView style="@style/Sign.Label" android:text="@string/installed_version" />
+                <TextView android:id="@+id/installedValue" style="@style/Sign.Value" android:textSize="18sp" />
+                <View style="@style/Sign.Divider" />
+                <TextView style="@style/Sign.Label" android:text="@string/latest_version" />
+                <TextView android:id="@+id/latestValue" style="@style/Sign.Value" android:text="–" android:textSize="18sp" />
+                <TextView
+                    android:id="@+id/devStatus"
+                    style="@style/Sign.Label"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="@font/jakarta_bold"
+                    android:textSize="14sp" />
+                <Button
+                    android:id="@+id/btnDevUpdate"
+                    style="@style/Sign.Button.Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/update_check" />
+            </LinearLayout>
+
+            <!-- Vad den här versionen innebär -->
+            <TextView style="@style/Sign.Section" android:text="@string/this_version" />
+            <LinearLayout
+                android:id="@+id/currentRelease"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView android:id="@+id/newerTitle" style="@style/Sign.Section" android:text="@string/newer_versions" android:visibility="gone" />
+            <LinearLayout
+                android:id="@+id/newerReleases"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView style="@style/Sign.Section" android:text="@string/previous_versions" />
+            <LinearLayout
+                android:id="@+id/previousReleases"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <!-- Senaste ändringar i koden -->
+            <TextView style="@style/Sign.Section" android:text="@string/changes_title" />
+            <LinearLayout style="@style/Sign.Card">
+                <LinearLayout
+                    android:id="@+id/changesList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <!-- Om appen -->
+            <TextView style="@style/Sign.Section" android:text="@string/about_section" />
+            <LinearLayout style="@style/Sign.Card">
+                <TextView style="@style/Sign.AboutTitle" android:text="@string/about_docs_title" />
+                <TextView style="@style/Sign.AboutBody" android:text="@string/about_docs_body" />
+                <TextView style="@style/Sign.AboutTitle" android:layout_marginTop="14dp" android:text="@string/about_sign_title" />
+                <TextView style="@style/Sign.AboutBody" android:text="@string/about_sign_body" />
+                <TextView style="@style/Sign.AboutTitle" android:layout_marginTop="14dp" android:text="@string/about_photo_title" />
+                <TextView style="@style/Sign.AboutBody" android:text="@string/about_photo_body" />
+                <TextView style="@style/Sign.AboutTitle" android:layout_marginTop="14dp" android:text="@string/about_seal_title" />
+                <TextView style="@style/Sign.AboutBody" android:text="@string/about_seal_body" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Sign.Card" android:layout_marginTop="12dp" android:paddingVertical="4dp">
+                <LinearLayout
+                    android:id="@+id/rowAllVersions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+                    <TextView style="@style/Sign.Label" android:text="@string/all_versions" />
+                    <TextView style="@style/Sign.Value" android:text="@string/show_on_github" android:textColor="@color/mint" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/developer_line"
+                android:textColor="@color/muted"
+                android:textSize="13sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/jakarta_bold"
+                android:text="@string/company_full"
+                android:textColor="@color/mint"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <View
+        android:id="@+id/statusBg"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="top"
+        android:background="@color/bg" />
+
+    <View
+        android:id="@+id/topScrim"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_gravity="top"
+        android:background="@drawable/bg_scrim_top" />
+</FrameLayout>

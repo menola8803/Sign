@@ -1,0 +1,11 @@
+web/node_modules/
+build/
+.gradle/
+app/build/
+local.properties
+*.apk
+*.iml
+.idea/
+keystore.properties
+nycklar/
+web/vendor/*.map

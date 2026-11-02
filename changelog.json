@@ -1,0 +1,99 @@
+{
+  "app": "Sign",
+  "developer": "Claes Sundman S.N.C AB",
+  "note": "Versionshistorik på svenska och engelska. Appen och webbversionen läser den här filen. Lägg nya versioner överst och höj version.txt.",
+  "releases": [
+    {
+      "version": "1.0",
+      "date": "2026-11-02",
+      "title": {
+        "sv": "Första utgåvan",
+        "en": "First release"
+      },
+      "summary": {
+        "sv": "Den första versionen av Sign. Öppna ett PDF- eller Word-dokument, tryck där signaturen ska stå och signera med fingret i liggande läge. Namn och datum skrivs alltid under signaturen. Ett foto från frontkameran läggs automatiskt bredvid signaturen, S.N.C-loggan placeras i vänstra hörnet och fler stämplar kan läggas till. Det signerade dokumentet sparas som Word eller PDF och kan skickas till någon i kontaktlistan. Allt sker i telefonen.",
+        "en": "The first version of Sign. Open a PDF or Word document, tap where the signature should go and sign with your finger in landscape. Name and date are always written below the signature. A front-camera photo is placed next to the signature automatically, the S.N.C logo goes in the top left corner and more stamps can be added. The signed document is saved as Word or PDF and can be sent to someone in the contact list. Everything happens on the phone."
+      },
+      "changes": [
+        {
+          "type": "new",
+          "text": {
+            "sv": "Öppna PDF- och Word-dokument (.docx).",
+            "en": "Open PDF and Word documents (.docx)."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Tryck på Signatur, Foto eller Stämpel och sedan där på sidan det ska stå. Dra för att flytta, blå punkt ändrar storlek.",
+            "en": "Tap Signature, Photo or Stamp, then where on the page it should go. Drag to move; the blue dot resizes."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Signering i liggande läge med mjuka penndrag, blått eller svart bläck, ångra och rensa.",
+            "en": "Landscape signing with smooth strokes, blue or black ink, undo and clear."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Namn och datum står alltid under signaturen.",
+            "en": "Name and date are always written below the signature."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Foto med frontkameran som läggs bredvid signaturen och skalas så att det får plats.",
+            "en": "Front-camera photo placed next to the signature, scaled to fit."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "S.N.C-loggan i vänstra hörnet och sigillet för Scandinavian Nexum Consulting AB. Egna stämplar kan läggas till.",
+            "en": "S.N.C logo in the top left corner and the Scandinavian Nexum Consulting AB seal. Your own stamps can be added."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Spara som Word (.docx) eller PDF. Spara, dela eller skicka till en kontakt.",
+            "en": "Save as Word (.docx) or PDF. Save, share or send to a contact."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Kontaktlista med namn, e-post och telefon. Välj vem som signerar.",
+            "en": "Contact list with name, email and phone. Choose who signs."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Engelska som standard, svenska väljs i Inställningar.",
+            "en": "English by default, Swedish can be chosen in Settings."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Utvecklingssida som hämtar uppdateringar och visar vad varje version innebär och tidigare innehöll.",
+            "en": "Development page that fetches updates and shows what each version brings and what earlier ones contained."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Samma startskärm, ikoner och struktur som Trace. Webbversion för iPhone och dator.",
+            "en": "Same start screen, icons and structure as Trace. Web version for iPhone and desktop."
+          }
+        }
+      ],
+      "apk": "https://github.com/menola8803/sign/releases/download/senaste/Sign.apk"
+    }
+  ]
+}

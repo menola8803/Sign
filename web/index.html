@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0F1A1C">
+  <meta name="description" content="Sign – sign Word and PDF documents. Developer: Claes Sundman S.N.C AB.">
+  <meta name="author" content="Claes Sundman, S.N.C AB">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Sign</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preload" href="fonts/cinzel_bold.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+  <script src="vendor/jszip.min.js" defer></script>
+  <script src="vendor/docx-preview.min.js" defer></script>
+  <script src="vendor/html2canvas.min.js" defer></script>
+  <script src="vendor/pdf-lib.min.js" defer></script>
+  <script src="js/app.js" type="module"></script>
+</head>
+<body>
+  <!-- Startskärm -->
+  <div id="splash" class="splash" aria-hidden="true">
+    <div class="splash-glow"></div>
+    <div class="splash-ring"><img class="splash-logo" src="icons/logo.png" alt=""></div>
+    <h1 class="splash-title">SIGN</h1>
+    <p class="splash-sub" data-i18n="tagline"></p>
+    <div class="splash-features">
+      <span><i><svg viewBox="0 0 40 40"><path d="M14 8h10l6 6v18H14z M24 8v6h6" fill="none" stroke="#E8B04A" stroke-width="2" stroke-linejoin="round"/><path d="M18 20h8M18 24h8" stroke="#8A6D2E" stroke-width="1.6" stroke-linecap="round"/><path d="M18 28h5" stroke="#5FC4B4" stroke-width="1.6" stroke-linecap="round"/></svg></i><b data-i18n="fDocs"></b></span><span><i><svg viewBox="0 0 40 40"><g transform="rotate(-40 20 20)"><path d="M16.5 5h7v21l-3.5 7-3.5-7z" fill="none" stroke="#E8B04A" stroke-width="2" stroke-linejoin="round"/></g><path d="M5 35q5-7 10-1t11-1" fill="none" stroke="#5FC4B4" stroke-width="1.8" stroke-linecap="round"/></svg></i><b data-i18n="fSign"></b></span><span><i><svg viewBox="0 0 40 40"><rect x="5" y="12" width="30" height="21" rx="4" fill="none" stroke="#E8B04A" stroke-width="2"/><path d="M14 12l2.5-4.5h7L26 12" fill="none" stroke="#E8B04A" stroke-width="2"/><circle cx="20" cy="22.5" r="6.2" fill="none" stroke="#5FC4B4" stroke-width="2"/><circle cx="18" cy="20.5" r="1.8" fill="#F3D9A0"/></svg></i><b data-i18n="fPhoto"></b></span>
+    </div>
+    <p class="splash-lock"><svg viewBox="0 0 14 16" width="12" height="14"><rect x="1" y="7" width="12" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 7V5a3.5 3.5 0 0 1 7 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span data-i18n="onDevice"></span></p>
+    <p class="splash-dev" data-i18n="devLine"></p>
+  </div>
+
+  <!-- Hem -->
+  <main id="view-home" class="view home" hidden>
+    <div class="home-bg"></div>
+    <div class="top-fade"></div>
+    <header class="home-head">
+      <img class="home-logo" src="icons/logo.png" alt="Sign">
+      <h1>SIGN</h1>
+      <p class="tag" data-i18n="tagline"></p>
+      <h2 class="headline"><span data-i18n="headline1"></span> <em data-i18n="headline2"></em></h2>
+    </header>
+    <nav class="tiles">
+      <button class="tile tile-primary" id="btn-open">
+        <span class="tile-ic"><svg viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 15c1.2-2.4 2.2-2.4 2.6-.6.3 1.4 1 1.4 2-.4.6-1 1.2-.8 1.4.6"/></svg></span>
+        <span class="tile-txt"><b data-i18n="open"></b><small data-i18n="openSub"></small></span>
+        <span class="tile-go">›</span>
+      </button>
+      <button class="tile" data-go="settings">
+        <span class="tile-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>
+        <span class="tile-txt"><b data-i18n="settings"></b><small data-i18n="settingsSub"></small></span>
+        <span class="tile-go">›</span>
+      </button>
+      <button class="tile" data-go="dev">
+        <span class="tile-ic"><svg viewBox="0 0 24 24"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg><i class="dot" id="home-update-dot" hidden></i></span>
+        <span class="tile-txt"><b data-i18n="development"></b><small data-i18n="developmentSub"></small></span>
+        <span class="tile-go">›</span>
+      </button>
+    </nav>
+    <footer class="home-foot">
+      <span data-i18n="devLine"></span>
+      <span class="ver">v<span class="app-version"></span></span>
+    </footer>
+    <input type="file" id="file-input" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+  </main>
+
+  <!-- Dokument / placering -->
+  <section id="view-editor" class="view editor" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-back aria-label="Tillbaka"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <div class="bar-title"><b id="doc-name"></b><small id="doc-meta"></small></div>
+    </header>
+    <div class="bar-fade"></div>
+    <div class="hint" id="editor-hint"></div>
+    <div class="pages" id="pages"></div>
+    <div class="loading" id="loading" hidden><div class="spinner"></div><p id="loading-text"></p></div>
+    <footer class="toolbar">
+      <button class="tool" id="btn-add-sign"><svg viewBox="0 0 24 24"><path d="M3 17c3-6 5-6 6-2s3 3 5-1 3-2 4 1"/><path d="M3 21h18"/></svg><span data-i18n="addSign"></span></button>
+      <button class="tool" id="btn-add-stamp"><svg viewBox="0 0 24 24"><path d="M9 13V9a3 3 0 1 1 6 0v4"/><path d="M5 13h14l1 4H4z"/><path d="M6 21h12"/></svg><span data-i18n="addStamp"></span></button>
+      <button class="tool tool-primary" id="btn-export"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><span data-i18n="export"></span></button>
+    </footer>
+  </section>
+
+  <!-- Signering (liggande) -->
+  <section id="view-sign" class="view sign" hidden>
+    <header class="sign-bar">
+      <button class="pill" id="sign-cancel" data-i18n="cancel"></button>
+      <div class="sign-title"><b data-i18n="signTitle"></b> <small id="sign-where"></small></div>
+      <div class="inks" role="radiogroup">
+        <button class="ink active" data-ink="#0f2a6b" style="--c:#0f2a6b" aria-label="Blå"></button>
+        <button class="ink" data-ink="#111111" style="--c:#111" aria-label="Svart"></button>
+      </div>
+    </header>
+    <div class="sign-area">
+      <div class="sign-photo" id="sign-photo" hidden><img alt=""></div>
+      <div class="sign-pad-wrap">
+        <canvas id="sign-pad"></canvas>
+        <div class="sign-guide"><span>✕</span><i></i><em data-i18n="signHere"></em></div>
+      </div>
+    </div>
+    <footer class="sign-foot">
+      <button class="pill" id="sign-undo" data-i18n="undo"></button>
+      <button class="pill" id="sign-clear" data-i18n="clear"></button>
+      <span class="grow"></span>
+      <button class="pill pill-gold" id="sign-done" data-i18n="done"></button>
+    </footer>
+    <div class="rotate" id="rotate-hint" hidden>
+      <div class="rotate-phone"></div>
+      <h2 data-i18n="rotateTitle"></h2>
+      <p data-i18n="rotateText"></p>
+      <button class="pill" id="rotate-skip" data-i18n="signAnyway"></button>
+    </div>
+  </section>
+
+  <!-- Inställningar -->
+  <section id="view-settings" class="view sheet-view" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-back aria-label="Tillbaka"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <div class="bar-title"><b data-i18n="settings"></b></div>
+    </header>
+    <div class="bar-fade"></div>
+    <div class="scroll">
+      <div class="card">
+        <h3 data-i18n="language"></h3>
+        <div class="seg" id="lang-seg">
+          <button data-lang="sv">🇸🇪 Svenska</button>
+          <button data-lang="en">🇬🇧 English</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="profile"></h3>
+        <label class="input-field"><span data-i18n="name"></span><input id="set-name" autocomplete="name" data-i18n-ph="namePh"></label>
+        <label class="switch"><input type="checkbox" id="set-showname"><i></i><span data-i18n="showName"></span></label>
+        <label class="switch"><input type="checkbox" id="set-showdate"><i></i><span data-i18n="showDate"></span></label>
+      </div>
+      <div class="card">
+        <h3 data-i18n="photo"></h3>
+        <p class="muted" data-i18n="photoText"></p>
+        <div class="photo-row">
+          <div class="photo-box" id="photo-box"><span data-i18n="noPhoto"></span></div>
+          <div class="photo-actions">
+            <button class="btn btn-gold" id="btn-photo"><span data-i18n="takePhoto"></span></button>
+            <button class="btn" id="btn-photo-remove" hidden data-i18n="removePhoto"></button>
+          </div>
+        </div>
+        <label class="switch"><input type="checkbox" id="set-includephoto"><i></i><span data-i18n="includePhoto"></span></label>
+        <div class="preview-label muted">Preview</div>
+        <canvas class="sig-preview" id="sig-preview"></canvas>
+      </div>
+      <div class="card">
+        <h3 data-i18n="stamps"></h3>
+        <p class="muted" data-i18n="stampsText"></p>
+        <div class="stamp-grid" id="stamp-list"></div>
+        <button class="btn" id="btn-stamp-add">+ <span data-i18n="addStampImg"></span></button>
+        <input type="file" id="stamp-input" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+      </div>
+      <p class="credit"><span data-i18n="devLine"></span> · v<span class="app-version"></span></p>
+    </div>
+  </section>
+
+  <!-- Utveckling -->
+  <section id="view-dev" class="view sheet-view" hidden>
+    <header class="bar">
+      <button class="icon-btn" data-back aria-label="Tillbaka"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <div class="bar-title"><b data-i18n="devTitle"></b></div>
+    </header>
+    <div class="bar-fade"></div>
+    <div class="scroll">
+      <div class="card dev-hero">
+        <img class="dev-logo" src="icons/logo.png" alt="">
+        <div>
+          <h2>SIGN</h2>
+          <p class="muted"><span data-i18n="devLine"></span><br>Scandinavian Nexum Consulting AB</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="kv"><span data-i18n="installed"></span><b>v<span class="app-version"></span></b></div>
+        <div class="kv"><span data-i18n="latest"></span><b id="dev-latest">–</b></div>
+        <div class="kv"><span data-i18n="platform"></span><b id="dev-platform"></b></div>
+        <div class="status" id="dev-status"></div>
+        <div class="dev-actions">
+          <button class="btn" id="btn-check" data-i18n="checkUpdates"></button>
+          <button class="btn btn-gold" id="btn-update" hidden></button>
+        </div>
+      </div>
+      <div id="release-current"></div>
+      <h3 class="section-h" data-i18n="previous"></h3>
+      <div id="release-prev"></div>
+      <div class="card">
+        <h3 data-i18n="about"></h3>
+        <p class="muted" data-i18n="aboutText"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kamera -->
+  <div class="modal" id="camera" hidden>
+    <div class="camera-box">
+      <video id="camera-video" playsinline autoplay muted></video>
+      <div class="camera-oval"></div>
+    </div>
+    <div class="camera-actions">
+      <button class="pill" id="camera-cancel" data-i18n="cancel"></button>
+      <button class="shutter" id="camera-shoot" aria-label="Fota"></button>
+      <span style="width:84px"></span>
+    </div>
+  </div>
+
+  <!-- Stämpelväljare -->
+  <div class="sheet" id="stamp-sheet" hidden>
+    <div class="sheet-panel">
+      <div class="sheet-grab"></div>
+      <h3 data-i18n="chooseStamp"></h3>
+      <div class="stamp-grid" id="stamp-pick"></div>
+      <button class="btn" id="stamp-sheet-close" data-i18n="cancel"></button>
+    </div>
+  </div>
+
+  <div class="banner" id="update-banner" hidden>
+    <span data-i18n="newVersionBanner"></span>
+    <button class="pill pill-gold" id="banner-update" data-i18n="updateNow"></button>
+  </div>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

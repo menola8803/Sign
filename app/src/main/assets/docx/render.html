@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<script src="jszip.min.js"></script>
+<script src="docx-preview.min.js"></script>
+<script src="html2canvas.min.js"></script>
+<style>
+  body { margin: 0; background: #fff; }
+  #host { width: 1100px; }
+  #host section.docx { margin: 0 0 20px; box-shadow: none !important; }
+</style>
+</head>
+<body>
+<div id="host"></div>
+<script>
+// Ritar upp Word-dokumentet och skickar tillbaka varje sida som JPEG till appen.
+(async () => {
+  try {
+    const b64 = Android.docx();
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const host = document.getElementById('host');
+    await docx.renderAsync(bytes.buffer, host, host, {
+      className: 'docx', inWrapper: false, breakPages: true, ignoreWidth: false, ignoreHeight: false,
+      ignoreLastRenderedPageBreak: false, renderHeaders: true, renderFooters: true, renderFootnotes: true,
+      experimental: true, useBase64URL: true,
+    });
+    await Promise.all([...host.querySelectorAll('img')].map(img => img.complete ? 0 : new Promise(r => { img.onload = img.onerror = r; })));
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const pages = [...host.querySelectorAll('section.docx')];
+    if (!pages.length) throw new Error('empty');
+    // Vilket stycke i dokumentet (räknat bland w:body:s barn) som ligger mitt på varje sida.
+    // Bilder i den sparade Word-filen förankras där och placeras sedan exakt i förhållande till sidan.
+    let offset = 0;
+    const anchors = pages.map(s => {
+      const art = s.querySelector('article') || s;
+      const n = art.children.length;
+      const a = offset + Math.max(0, Math.floor((n - 1) / 2));
+      offset += n;
+      return a;
+    });
+    for (let i = 0; i < pages.length; i++) {
+      const s = pages[i];
+      const w = s.offsetWidth, h = s.offsetHeight;
+      const scale = Math.min(1600 / w, 2.2);
+      const canvas = await html2canvas(s, { scale, backgroundColor: '#ffffff', logging: false, useCORS: true, windowWidth: 1200 });
+      const data = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+      Android.page(i, pages.length, w, h, anchors[i], data);
+    }
+    Android.done();
+  } catch (e) {
+    Android.fail(String(e && e.message || e));
+  }
+})();
+</script>
+</body>
+</html>

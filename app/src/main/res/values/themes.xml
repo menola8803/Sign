@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mörkt tema i samma stil som Trace -->
+    <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">@color/gold</item>
+        <item name="android:colorAccent">@color/gold</item>
+        <item name="android:colorControlActivated">@color/gold</item>
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+        <item name="android:textColorHint">@color/dim</item>
+        <item name="android:fontFamily">@font/jakarta</item>
+        <item name="android:buttonStyle">@style/Sign.Button</item>
+        <item name="android:alertDialogTheme">@style/Sign.Dialog</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/card</item>
+    </style>
+
+    <style name="Sign.Button" parent="android:Widget.Material.Button">
+        <item name="android:background">@drawable/bg_button_outline</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/jakarta_bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <style name="Sign.Button.Primary">
+        <item name="android:background">@drawable/bg_button_primary</item>
+        <item name="android:textColor">@color/on_gold</item>
+    </style>
+
+    <style name="Sign.Dialog" parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:colorAccent">@color/gold</item>
+        <item name="android:windowBackground">@drawable/bg_dialog</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+        <item name="android:fontFamily">@font/jakarta</item>
+    </style>
+
+    <!-- Signeringen: ljus "papperston" så att bläcket syns som på ett riktigt dokument -->
+    <style name="Sign.Paper" parent="AppTheme">
+        <item name="android:windowBackground">@color/paper_light</item>
+        <item name="android:navigationBarColor">@color/paper_light</item>
+    </style>
+
+    <!-- Systemets startskärm, som sedan går över i Signs egna animerade startskärm -->
+    <style name="Theme.Sign.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bg_deep</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimationDuration">300</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
+    </style>
+</resources>
