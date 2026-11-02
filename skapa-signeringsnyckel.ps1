@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
-$keystore = "nycklar/sign-release.jks"
+$keystore = "nycklar/sign-release.p12"
 $alias = "sncsign"
 
 $secrets = "nycklar/github-hemligheter.txt"

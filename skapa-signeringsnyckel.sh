@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-KEYSTORE="nycklar/sign-release.jks"
+KEYSTORE="nycklar/sign-release.p12"
 ALIAS="sncsign"
 
 SECRETS="nycklar/github-hemligheter.txt"

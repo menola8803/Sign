@@ -32,9 +32,9 @@ jobs:
         run: |
           if [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
             mkdir -p nycklar
-            printf '%s' "$KEYSTORE_B64" | base64 -d > nycklar/sign-release.jks
+            printf '%s' "$KEYSTORE_B64" | base64 -d > nycklar/sign-release.p12
             {
-              echo "storeFile=nycklar/sign-release.jks"
+              echo "storeFile=nycklar/sign-release.p12"
               echo "storePassword=$KEYSTORE_PASSWORD"
               echo "keyAlias=sncsign"
               echo "keyPassword=$KEYSTORE_PASSWORD"
