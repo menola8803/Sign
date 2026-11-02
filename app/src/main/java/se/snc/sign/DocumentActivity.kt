@@ -176,11 +176,14 @@ class DocumentActivity : BaseActivity(), PageView.Host {
                 val p = pages!!
                 findViewById<TextView>(R.id.docMeta).text =
                     tr(R.string.doc_meta, if (isPdf) "PDF" else "WORD", p.count) + if (isPdf) "" else " · " + getString(R.string.docx_note)
-                // S.N.C-loggan i vänstra hörnet på första sidan
-                if (Prefs.autoSeal(this@DocumentActivity) && fields.none { it.stampId == Seal.LOGO_ID }) {
+                // Den valda stämpeln (standard: S.N.C-loggan) i vänstra hörnet på första sidan
+                val corner = Prefs.cornerStamp(this@DocumentActivity)
+                if (Prefs.autoSeal(this@DocumentActivity) && fields.none { it.stampId == corner }) {
                     val ar = p.widthPt(0) / p.heightPt(0)
+                    val bmp = Store.stampBitmap(this@DocumentActivity, corner)
+                    val ratio = if (bmp != null && bmp.width > 0) bmp.height.toFloat() / bmp.width else 1f
                     val w = 0.13f
-                    fields.add(Field(System.nanoTime(), Field.Type.STAMP, 0, 0.035f, 0.025f, w, w * ar, stampId = Seal.LOGO_ID))
+                    fields.add(Field(System.nanoTime(), Field.Type.STAMP, 0, 0.035f, 0.025f, w, (w * ar * ratio).coerceAtMost(0.25f), stampId = corner))
                 }
                 list.adapter?.notifyDataSetChanged()
                 updateHint()
@@ -339,11 +342,24 @@ class DocumentActivity : BaseActivity(), PageView.Host {
     private fun chooseStamp() {
         if (placeType == Field.Type.STAMP) { setPlacing(null); return }
         val stamps = Store.stamps(this)
+        // Samma rader som i Inställningar: bild, namn och typ, så man ser vilken stämpel man väljer
+        val adapter = object : ArrayAdapter<Store.Stamp>(this, R.layout.item_stamp, stamps) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val s = stamps[position]
+                val row = convertView ?: layoutInflater.inflate(R.layout.item_stamp, parent, false)
+                row.isClickable = false; row.isFocusable = false
+                row.findViewById<android.widget.ImageView>(R.id.stampImage).setImageBitmap(Store.stampBitmap(this@DocumentActivity, s.id))
+                row.findViewById<TextView>(R.id.stampName).text = s.name
+                row.findViewById<TextView>(R.id.stampKind).setText(if (s.builtin) R.string.stamp_builtin else R.string.stamp_own)
+                row.findViewById<View>(R.id.stampState).visibility = View.GONE
+                row.findViewById<View>(R.id.stampCheck).visibility = View.GONE
+                row.findViewById<View>(R.id.stampRemove).visibility = View.GONE
+                return row
+            }
+        }
         AlertDialog.Builder(this)
             .setTitle(R.string.choose_stamp)
-            .setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, stamps.map { it.name })) { _, i ->
-                setPlacing(Field.Type.STAMP, stamps[i].id)
-            }
+            .setAdapter(adapter) { _, i -> setPlacing(Field.Type.STAMP, stamps[i].id) }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }

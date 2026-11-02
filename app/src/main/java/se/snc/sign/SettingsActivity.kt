@@ -170,7 +170,6 @@ class SettingsActivity : BaseActivity() {
 
         // Utvecklare
         findViewById<View>(R.id.rowDev).setOnClickListener { startActivity(Intent(this, DevActivity::class.java)) }
-        findViewById<View>(R.id.rowAllVersions).setOnClickListener { UpdateChecker.open(this, "${UpdateChecker.REPO_URL}/releases") }
     }
 
     private fun bindSwitch(id: Int, value: Boolean, set: (Boolean) -> Unit) {
@@ -200,37 +199,38 @@ class SettingsActivity : BaseActivity() {
         findViewById<Button>(R.id.btnSig2Camera).setText(if (bmp == null) R.string.sig2_photo_paper else R.string.sig2_photo_again)
     }
 
+    /** Stämplarna med bild. Tryck för att välja vilken som läggs i vänstra hörnet; den valda har guldram och bock. */
     private fun renderStamps() {
         val list = findViewById<LinearLayout>(R.id.stampList)
         list.removeAllViews()
-        val d = resources.displayMetrics.density
+        val selected = Prefs.cornerStamp(this)
         for (s in Store.stamps(this)) {
-            val row = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
-                setPadding(0, (6 * d).toInt(), 0, (6 * d).toInt())
+            val row = layoutInflater.inflate(R.layout.item_stamp, list, false)
+            val isSel = s.id == selected
+            row.isSelected = isSel
+            row.findViewById<ImageView>(R.id.stampImage).setImageBitmap(Store.stampBitmap(this, s.id))
+            row.findViewById<TextView>(R.id.stampName).text = s.name
+            row.findViewById<TextView>(R.id.stampKind).setText(if (s.builtin) R.string.stamp_builtin else R.string.stamp_own)
+            row.findViewById<TextView>(R.id.stampState).apply {
+                setText(if (isSel) R.string.stamp_selected else R.string.stamp_tap_to_choose)
+                setTextColor(ContextCompat.getColor(context, if (isSel) R.color.gold else R.color.dim))
             }
-            row.addView(ImageView(this).apply {
-                setImageBitmap(Store.stampBitmap(this@SettingsActivity, s.id))
-                setBackgroundResource(R.drawable.bg_stamp)
-                val p = (4 * d).toInt(); setPadding(p, p, p, p)
-            }, LinearLayout.LayoutParams((52 * d).toInt(), (52 * d).toInt()))
-            row.addView(LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding((12 * d).toInt(), 0, 0, 0)
-                addView(TextView(this@SettingsActivity).apply { text = s.name; setTextColor(ContextCompat.getColor(context, R.color.ink)); textSize = 15f })
-                addView(TextView(this@SettingsActivity).apply {
-                    setText(if (s.builtin) R.string.stamp_builtin else R.string.stamp_own)
-                    setTextColor(ContextCompat.getColor(context, if (s.builtin) R.color.mint else R.color.dim)); textSize = 12f
-                })
-            }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-            if (!s.builtin) row.addView(TextView(this).apply {
-                setText(R.string.remove)
-                setTextColor(ContextCompat.getColor(context, R.color.danger))
-                textSize = 14f
-                setPadding((12 * d).toInt(), (12 * d).toInt(), (4 * d).toInt(), (12 * d).toInt())
-                setOnClickListener { Store.deleteStamp(this@SettingsActivity, s.id); renderStamps() }
-            })
+            row.findViewById<View>(R.id.stampCheck).visibility = if (isSel) View.VISIBLE else View.GONE
+            row.findViewById<View>(R.id.stampRemove).apply {
+                visibility = if (s.builtin) View.GONE else View.VISIBLE
+                setOnClickListener {
+                    AlertDialog.Builder(this@SettingsActivity).setMessage(tr(R.string.stamp_remove_confirm, s.name))
+                        .setPositiveButton(R.string.remove) { _, _ -> Store.deleteStamp(this@SettingsActivity, s.id); renderStamps() }
+                        .setNegativeButton(R.string.cancel, null).show()
+                }
+            }
+            row.contentDescription = s.name + if (isSel) ", " + getString(R.string.stamp_selected) else ""
+            row.setOnClickListener {
+                Prefs.setCornerStamp(this, s.id)
+                if (!Prefs.autoSeal(this)) { Prefs.setAutoSeal(this, true); findViewById<Switch>(R.id.switchAutoSeal).isChecked = true }
+                renderStamps()
+                Toast.makeText(this, tr(R.string.stamp_chosen, s.name), Toast.LENGTH_SHORT).show()
+            }
             list.addView(row)
         }
     }

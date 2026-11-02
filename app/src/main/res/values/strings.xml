@@ -89,7 +89,7 @@
     <string name="photo_remove_confirm">Remove your photo?</string>
     <string name="include_photo">Place photo next to my signature</string>
     <string name="stamps_section">STAMPS &amp; SEALS</string>
-    <string name="stamps_desc">The Scandinavian Nexum Consulting AB seal is built in. Add more stamps as images; PNG with a transparent background looks best.</string>
+    <string name="stamps_desc">Tap a stamp to choose which one goes in the top left corner of the document. The selected one has a gold frame and a check mark. Add more stamps as images; PNG with a transparent background looks best.</string>
     <string name="add_stamp_image">+ Add stamp</string>
     <string name="stamp_builtin">Built-in seal</string>
     <string name="stamp_own">Your stamp</string>
@@ -166,7 +166,7 @@ Here is the signed document.
 
 Best regards
 %2$s</string>
-    <string name="auto_seal">S.N.C logo in the top left corner</string>
+    <string name="auto_seal">Put the selected stamp in the top left corner</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_sub">Name, email and phone</string>
     <string name="contacts_count">%1$d contacts</string>
@@ -207,4 +207,8 @@ Best regards
     <string name="sig2_not_found">No signature was found in the image. Use dark ink on white paper and fill the frame.</string>
     <string name="signer_sig2">Signature 2 – %1$s</string>
     <string name="sig2_short">saved</string>
+    <string name="stamp_selected">✓ Selected – top left corner</string>
+    <string name="stamp_tap_to_choose">Tap to select</string>
+    <string name="stamp_chosen">%1$s is selected for the top left corner.</string>
+    <string name="stamp_remove_confirm">Remove %1$s?</string>
 </resources>

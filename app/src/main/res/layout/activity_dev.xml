@@ -137,21 +137,6 @@
                 <TextView style="@style/Sign.AboutBody" android:text="@string/about_seal_body" />
             </LinearLayout>
 
-            <LinearLayout style="@style/Sign.Card" android:layout_marginTop="12dp" android:paddingVertical="4dp">
-                <LinearLayout
-                    android:id="@+id/rowAllVersions"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="vertical"
-                    android:paddingVertical="12dp">
-                    <TextView style="@style/Sign.Label" android:text="@string/all_versions" />
-                    <TextView style="@style/Sign.Value" android:text="@string/show_on_github" android:textColor="@color/mint" />
-                </LinearLayout>
-            </LinearLayout>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- En stämpel i listan. Den valda får guldram och bock. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/stampRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:background="@drawable/bg_stamp_row"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="76dp"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <ImageView
+        android:id="@+id/stampImage"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_stamp"
+        android:contentDescription="@null"
+        android:padding="4dp"
+        android:scaleType="fitCenter" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/stampName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/jakarta_bold"
+            android:textColor="@color/ink"
+            android:textSize="14sp" />
+        <TextView
+            android:id="@+id/stampKind"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/dim"
+            android:textSize="12sp" />
+        <TextView
+            android:id="@+id/stampState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/jakarta_bold"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/stampCheck"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/bg_check"
+        android:fontFamily="@font/jakarta_bold"
+        android:gravity="center"
+        android:text="✓"
+        android:textColor="@color/on_gold"
+        android:textSize="17sp" />
+
+    <TextView
+        android:id="@+id/stampRemove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:padding="8dp"
+        android:text="@string/remove"
+        android:textColor="@color/danger"
+        android:textSize="13sp" />
+</LinearLayout>

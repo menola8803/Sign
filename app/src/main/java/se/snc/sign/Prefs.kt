@@ -14,6 +14,7 @@ object Prefs {
     private const val KEY_INCLUDE_PHOTO = "include_photo"
     private const val KEY_INK = "ink"
     private const val KEY_AUTO_SEAL = "auto_seal"
+    private const val KEY_CORNER_STAMP = "corner_stamp"
     private const val KEY_PHOTO_CAMERA = "photo_camera"
     private const val KEY_SIG2_ENABLED = "sig2_enabled"
     private const val KEY_SIG2_NAME = "sig2_name"
@@ -59,6 +60,13 @@ object Prefs {
     /** S.N.C-sigillet läggs automatiskt i vänstra hörnet på första sidan. */
     fun autoSeal(ctx: Context) = sp(ctx).getBoolean(KEY_AUTO_SEAL, true)
     fun setAutoSeal(ctx: Context, on: Boolean) = sp(ctx).edit { putBoolean(KEY_AUTO_SEAL, on) }
+
+    /** Stämpeln som läggs i vänstra hörnet. Standard: den runda S.N.C-loggan. */
+    fun cornerStamp(ctx: Context): String {
+        val id = sp(ctx).getString(KEY_CORNER_STAMP, null) ?: return Seal.LOGO_ID
+        return if (Store.stamps(ctx).any { it.id == id }) id else Seal.LOGO_ID
+    }
+    fun setCornerStamp(ctx: Context, id: String) = sp(ctx).edit { putString(KEY_CORNER_STAMP, id) }
 
     fun contactsJson(ctx: Context): String = sp(ctx).getString(KEY_CONTACTS, "[]") ?: "[]"
     fun setContactsJson(ctx: Context, json: String) = sp(ctx).edit { putString(KEY_CONTACTS, json) }

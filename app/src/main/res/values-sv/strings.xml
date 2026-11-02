@@ -83,7 +83,7 @@
     <string name="photo_remove_confirm">Ta bort ditt foto?</string>
     <string name="include_photo">Lägg fotot bredvid min signatur</string>
     <string name="stamps_section">STÄMPLAR &amp; SIGILL</string>
-    <string name="stamps_desc">Sigillet för Scandinavian Nexum Consulting AB är inbyggt. Lägg till fler stämplar som bilder; PNG med genomskinlig bakgrund blir snyggast.</string>
+    <string name="stamps_desc">Tryck på en stämpel för att välja vilken som läggs i vänstra hörnet på dokumentet. Den valda har guldram och bock. Lägg till fler stämplar som bilder; PNG med genomskinlig bakgrund blir snyggast.</string>
     <string name="add_stamp_image">+ Lägg till stämpel</string>
     <string name="stamp_builtin">Inbyggt sigill</string>
     <string name="stamp_own">Egen stämpel</string>
@@ -158,7 +158,7 @@ Här är det signerade dokumentet.
 
 Vänliga hälsningar
 %2$s</string>
-    <string name="auto_seal">S.N.C-loggan i vänstra hörnet</string>
+    <string name="auto_seal">Lägg vald stämpel i vänstra hörnet</string>
     <string name="contacts">Kontakter</string>
     <string name="contacts_sub">Namn, e-post och telefon</string>
     <string name="contacts_count">%1$d kontakter</string>
@@ -198,4 +198,8 @@ Vänliga hälsningar
     <string name="sig2_not_found">Ingen signatur hittades i bilden. Använd mörkt bläck på vitt papper och fyll ramen.</string>
     <string name="signer_sig2">Signatur 2 – %1$s</string>
     <string name="sig2_short">sparad</string>
+    <string name="stamp_selected">✓ Vald – vänstra hörnet</string>
+    <string name="stamp_tap_to_choose">Tryck för att välja</string>
+    <string name="stamp_chosen">%1$s är vald för vänstra hörnet.</string>
+    <string name="stamp_remove_confirm">Ta bort %1$s?</string>
 </resources>

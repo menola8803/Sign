@@ -41,7 +41,6 @@ class DevActivity : BaseActivity() {
             val r = latest
             if (r != null && r.build > UpdateChecker.currentBuild(this)) UpdateChecker.open(this, r.apkUrl) else load()
         }
-        findViewById<View>(R.id.rowAllVersions).setOnClickListener { UpdateChecker.open(this, "${UpdateChecker.REPO_URL}/releases") }
         load()
     }
 
