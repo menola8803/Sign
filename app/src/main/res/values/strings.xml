@@ -185,4 +185,26 @@ Best regards
     <string name="contact_bad_email">Check the email address</string>
     <string name="contact_saved">Contact saved.</string>
     <string name="contact_remove_confirm">Remove %1$s from your contacts?</string>
+
+    <!-- Camera choice and signature 2 -->
+    <string name="photo_camera">Camera for the photo</string>
+    <string name="camera_front">Front camera (facing you)</string>
+    <string name="camera_back">Back camera</string>
+    <string name="choose_camera">Choose camera</string>
+    <string name="camera_flip">Switch ⟲</string>
+    <string name="camera_hint_sig2">Fit the signature inside the frame</string>
+    <string name="sig2_section">SIGNATURE 2 (OPTIONAL)</string>
+    <string name="sig2_enable">Use signature 2</string>
+    <string name="sig2_desc">A second, ready-made signature: photograph a signature on paper or insert an image from Downloads. It can then be placed on documents without drawing. Off by default.</string>
+    <string name="sig2_none">No signature 2 yet</string>
+    <string name="sig2_photo_paper">Photograph signature on paper</string>
+    <string name="sig2_photo_again">Photograph again</string>
+    <string name="sig2_from_file">Insert image from Downloads</string>
+    <string name="sig2_remove">Remove signature 2</string>
+    <string name="sig2_remove_confirm">Remove signature 2?</string>
+    <string name="sig2_name_label">Name below signature 2</string>
+    <string name="sig2_show_date">Show date below signature 2</string>
+    <string name="sig2_not_found">No signature was found in the image. Use dark ink on white paper and fill the frame.</string>
+    <string name="signer_sig2">Signature 2 – %1$s</string>
+    <string name="sig2_short">saved</string>
 </resources>

@@ -14,6 +14,26 @@ object Store {
     fun hasPhoto(ctx: Context) = photoFile(ctx).exists()
     fun photo(ctx: Context): Bitmap? = photoFile(ctx).takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.path) }
 
+    // ---- Signatur 2 (tillval): en färdig signatur från papper eller en bild ----
+
+    fun sig2File(ctx: Context) = File(ctx.filesDir, "signature2.png")
+    fun hasSig2(ctx: Context) = sig2File(ctx).exists()
+    fun sig2(ctx: Context): Bitmap? = sig2File(ctx).takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.path) }
+    fun deleteSig2(ctx: Context) { sig2File(ctx).delete(); Composer.forget(sig2File(ctx).path) }
+
+    /** Sparar signatur 2 från en bild (foto av papper eller infogad fil). Bakgrunden blir genomskinlig. */
+    fun saveSig2(ctx: Context, src: Bitmap): Boolean {
+        val ink = InkExtractor.extract(scaleDown(src, 2000)) ?: return false
+        savePng(ink, sig2File(ctx))
+        Composer.forget(sig2File(ctx).path)
+        return true
+    }
+
+    fun saveSig2(ctx: Context, uri: Uri): Boolean {
+        val bmp = ctx.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) } ?: return false
+        return saveSig2(ctx, bmp)
+    }
+
     private fun stampDir(ctx: Context) = File(ctx.filesDir, "stamps").apply { mkdirs() }
     fun signatureDir(ctx: Context) = File(ctx.cacheDir, "signatures").apply { mkdirs() }
 

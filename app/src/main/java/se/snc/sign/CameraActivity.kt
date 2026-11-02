@@ -21,8 +21,22 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import java.io.FileOutputStream
 
-/** Tar ett foto med frontkameran. Fotot beskärs till porträtt 3:4 och sparas privat i appen. */
+/**
+ * Tar ett foto med vald kamera.
+ * - Foto till signatur 1: beskärs till porträtt 3:4.
+ * - Signatur 2 på papper: beskärs till ramen, papperet görs genomskinligt och bara bläcket sparas.
+ */
 class CameraActivity : BaseActivity() {
+
+    companion object {
+        const val EXTRA_TARGET = "se.snc.sign.TARGET"
+        const val EXTRA_LENS = "se.snc.sign.LENS"
+        const val TARGET_PHOTO = "photo"
+        const val TARGET_SIG2 = "sig2"
+    }
+
+    private val target by lazy { intent.getStringExtra(EXTRA_TARGET) ?: TARGET_PHOTO }
+    private var lens = Camera.FRONT
 
     private var capture: ImageCapture? = null
 
@@ -42,6 +56,17 @@ class CameraActivity : BaseActivity() {
             val b = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             bar.updatePadding(bottom = pb + b.bottom)
             insets
+        }
+        lens = intent.getStringExtra(EXTRA_LENS) ?: if (target == TARGET_SIG2) Camera.BACK else Prefs.photoCamera(this)
+        if (target == TARGET_SIG2) {
+            // Bred ram för en signatur på papper
+            val d = resources.displayMetrics.density
+            findViewById<View>(R.id.cameraFrame).layoutParams.apply { width = (320 * d).toInt(); height = (130 * d).toInt() }
+            findViewById<android.widget.TextView>(R.id.cameraHint).setText(R.string.camera_hint_sig2)
+        }
+        findViewById<View>(R.id.btnFlip).setOnClickListener {
+            lens = if (lens == Camera.FRONT) Camera.BACK else Camera.FRONT
+            startCamera()
         }
         findViewById<View>(R.id.btnCameraCancel).setOnClickListener { finish() }
         findViewById<View>(R.id.btnShutter).setOnClickListener { takePhoto() }
@@ -63,7 +88,13 @@ class CameraActivity : BaseActivity() {
                     .build()
                 capture = imageCapture
                 provider.unbindAll()
-                provider.bindToLifecycle(this, CameraSelector.DEFAULT_FRONT_CAMERA, preview, imageCapture)
+                var selector = if (lens == Camera.FRONT) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+                if (!provider.hasCamera(selector)) {
+                    // Telefonen saknar den kameran: använd den andra
+                    lens = if (lens == Camera.FRONT) Camera.BACK else Camera.FRONT
+                    selector = if (lens == Camera.FRONT) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+                }
+                provider.bindToLifecycle(this, selector, preview, imageCapture)
             } catch (e: Exception) {
                 Toast.makeText(this, R.string.camera_error, Toast.LENGTH_LONG).show()
                 finish()
@@ -79,10 +110,24 @@ class CameraActivity : BaseActivity() {
                 val rotation = image.imageInfo.rotationDegrees
                 val raw = image.toBitmap()
                 image.close()
-                // Rätta rotationen och spegla som i förhandsvisningen
-                val m = Matrix().apply { postRotate(rotation.toFloat()); postScale(-1f, 1f) }
+                // Rätta rotationen. Selfies speglas som i förhandsvisningen; papper speglas aldrig så att texten blir rättvänd.
+                val m = Matrix().apply {
+                    postRotate(rotation.toFloat())
+                    if (lens == Camera.FRONT && target == TARGET_PHOTO) postScale(-1f, 1f)
+                }
                 val upright = Bitmap.createBitmap(raw, 0, 0, raw.width, raw.height, m, true)
-                save(cropPortrait(upright))
+                if (target == TARGET_SIG2) {
+                    val frame = findViewById<View>(R.id.cameraFrame)
+                    val prev = findViewById<View>(R.id.preview)
+                    val ok = Store.saveSig2(this@CameraActivity, cropToFrame(upright, frame, prev))
+                    if (!ok) {
+                        Toast.makeText(this@CameraActivity, R.string.sig2_not_found, Toast.LENGTH_LONG).show()
+                        findViewById<View>(R.id.btnShutter).isEnabled = true
+                        return
+                    }
+                } else {
+                    save(cropPortrait(upright))
+                }
                 setResult(RESULT_OK)
                 finish()
             }
@@ -92,6 +137,22 @@ class CameraActivity : BaseActivity() {
                 findViewById<View>(R.id.btnShutter).isEnabled = true
             }
         })
+    }
+
+    /** Beskär bilden till ramen på skärmen (förhandsvisningen fyller skärmen, "center crop"). */
+    private fun cropToFrame(b: Bitmap, frame: View, preview: View): Bitmap {
+        val vw = preview.width.toFloat(); val vh = preview.height.toFloat()
+        if (vw <= 0f || vh <= 0f) return b
+        val scale = maxOf(vw / b.width, vh / b.height)
+        val offX = (b.width * scale - vw) / 2f; val offY = (b.height * scale - vh) / 2f
+        val margin = 0.06f
+        val fl = frame.left - frame.width * margin; val ft = frame.top - frame.height * margin
+        val fr = frame.right + frame.width * margin; val fb = frame.bottom + frame.height * margin
+        val x0 = ((fl + offX) / scale).toInt().coerceIn(0, b.width - 1)
+        val y0 = ((ft + offY) / scale).toInt().coerceIn(0, b.height - 1)
+        val x1 = ((fr + offX) / scale).toInt().coerceIn(x0 + 1, b.width)
+        val y1 = ((fb + offY) / scale).toInt().coerceIn(y0 + 1, b.height)
+        return Bitmap.createBitmap(b, x0, y0, x1 - x0, y1 - y0)
     }
 
     private fun cropPortrait(b: Bitmap): Bitmap {

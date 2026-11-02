@@ -46,6 +46,8 @@ class DocumentActivity : BaseActivity(), PageView.Host {
     private var outputMime = "application/pdf"
     /** Den som signerar: jag själv (null) eller en kontakt. */
     private var signer: Contact? = null
+    /** Nästa signaturfält ska fyllas med den sparade signatur 2. */
+    private var placeSig2 = false
 
     override val fields = ArrayList<Field>()
     private var placeType: Field.Type? = null
@@ -251,8 +253,11 @@ class DocumentActivity : BaseActivity(), PageView.Host {
             stampId = placeStamp,
         )
         fields.add(f)
+        val useSig2 = type == Field.Type.SIGN && placeSig2
+        placeSig2 = false
         setPlacing(null)
-        if (type == Field.Type.SIGN) sign(f)
+        if (useSig2) { fillSig2(f); refresh(page); updateHint() }
+        else if (type == Field.Type.SIGN) sign(f)
     }
 
     /** Lägger fotot till vänster om signaturen; flyttar signaturen åt höger om det behövs för att få plats. */
@@ -267,23 +272,44 @@ class DocumentActivity : BaseActivity(), PageView.Host {
         fields.add(Field(System.nanoTime(), Field.Type.PHOTO, sig.page, x, sig.y, w, h))
     }
 
-    /** Vem ska signera? Jag själv eller någon i kontaktlistan. */
+    private fun sig2Available() = Prefs.sig2Enabled(this) && Store.hasSig2(this)
+
+    /** Vem ska signera? Jag själv, signatur 2 (om tillvalet är på) eller någon i kontaktlistan. */
     private fun chooseSigner() {
+        placeSig2 = false
         val contacts = Contacts.all(this)
-        if (contacts.isEmpty()) { signer = null; setPlacing(Field.Type.SIGN); return }
+        val sig2 = sig2Available()
+        if (contacts.isEmpty() && !sig2) { signer = null; setPlacing(Field.Type.SIGN); return }
         val me = Prefs.name(this).ifBlank { getString(R.string.me) }
-        val names = listOf(tr(R.string.signer_me, me)) + contacts.map { it.name } + getString(R.string.contact_add)
+        val options = ArrayList<Pair<String, () -> Unit>>()
+        options += tr(R.string.signer_me, me) to { signer = null; setPlacing(Field.Type.SIGN) }
+        if (sig2) options += tr(R.string.signer_sig2, Prefs.sig2Name(this).ifBlank { getString(R.string.sig2_short) }) to {
+            signer = null; placeSig2 = true; setPlacing(Field.Type.SIGN)
+        }
+        contacts.forEach { c -> options += c.name to { signer = c; setPlacing(Field.Type.SIGN) } }
+        options += getString(R.string.contact_add) to { startActivity(Intent(this, ContactsActivity::class.java)) }
         AlertDialog.Builder(this)
             .setTitle(R.string.who_signs)
-            .setItems(names.toTypedArray()) { _, i ->
-                when {
-                    i == 0 -> { signer = null; setPlacing(Field.Type.SIGN) }
-                    i <= contacts.size -> { signer = contacts[i - 1]; setPlacing(Field.Type.SIGN) }
-                    else -> startActivity(Intent(this, ContactsActivity::class.java))
-                }
-            }
+            .setItems(options.map { it.first }.toTypedArray()) { _, i -> options[i].second() }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    /** Signatur 2 läggs in direkt: den sparade bilden, namn och datum. Ingen ritning behövs. */
+    private fun fillSig2(f: Field) {
+        val bmp = Store.sig2(this) ?: return
+        f.sigFile = Store.sig2File(this).path
+        f.name = Prefs.sig2Name(this)
+        f.date = if (Prefs.sig2Date(this)) Composer.today(this) else ""
+        // Fältets proportioner efter signaturen (plus plats för namn och datum)
+        val p = pages ?: return
+        val lines = (if (f.name.isNotBlank()) 1 else 0) + (if (f.date.isNotBlank()) 1 else 0)
+        val sigRatio = bmp.width.toFloat() / bmp.height
+        val wPt = f.w * p.widthPt(f.page)
+        val hPt = (wPt / sigRatio).coerceIn(wPt / 6f, wPt / 1.6f) * (1f + 0.32f * lines)
+        val cy = f.y + f.h / 2f
+        f.h = (hPt / p.heightPt(f.page)).coerceAtMost(0.4f)
+        f.y = (cy - f.h / 2f).coerceIn(0f, 1f - f.h)
     }
 
     override fun sign(field: Field) {

@@ -9,7 +9,8 @@ Android-app som signerar Word- och PDF-dokument direkt i telefonen, i samma stil
 - **Öppna** en PDF eller ett Word-dokument (.docx), från appen eller via *Öppna med* / *Dela* i andra appar.
 - **Visa var**: tryck på *Signatur*, *Foto* eller *Stämpel* och sedan där på sidan det ska stå. Dra för att flytta, blå punkt ändrar storlek, rött kryss tar bort.
 - **Signera** i liggande läge – skärmen vänds automatiskt. Namn och datum skrivs alltid under signaturen.
-- **Foto** med frontkameran (Inställningar). Läggs automatiskt bredvid signaturen och skalas så att det får plats.
+- **Foto** med främre eller bakre kameran (välj i Inställningar). Läggs automatiskt bredvid signaturen och skalas så att det får plats.
+- **Signatur 2** (tillval, av som standard): fota en signatur på papper med valfri kamera eller infoga en bild från Download. Eget namn och datum. Väljs när man trycker på *Signatur* och läggs in direkt.
 - **S.N.C-loggan** placeras i vänstra hörnet på första sidan (kan stängas av). Sigillet för Scandinavian Nexum Consulting AB finns inbyggt, och fler stämplar kan läggas till som bilder.
 - **Spara** som Word (.docx) eller PDF. PDF-filer behåller text och kvalitet. Spara, dela eller skicka till en kontakt.
 - **Kontakter** med namn, e-post och telefon. Välj vem som signerar; namnet skrivs under signaturen.

@@ -177,4 +177,25 @@ Vänliga hälsningar
     <string name="contact_bad_email">Kontrollera e-postadressen</string>
     <string name="contact_saved">Kontakten sparad.</string>
     <string name="contact_remove_confirm">Ta bort %1$s från kontakterna?</string>
+
+    <string name="photo_camera">Kamera för fotot</string>
+    <string name="camera_front">Främre kameran (mot ansiktet)</string>
+    <string name="camera_back">Bakre kameran</string>
+    <string name="choose_camera">Välj kamera</string>
+    <string name="camera_flip">Byt ⟲</string>
+    <string name="camera_hint_sig2">Få plats med signaturen inom ramen</string>
+    <string name="sig2_section">SIGNATUR 2 (TILLVAL)</string>
+    <string name="sig2_enable">Använd signatur 2</string>
+    <string name="sig2_desc">En andra, färdig signatur: fota en signatur på papper eller infoga en bild från Hämtade filer (Download). Den kan sedan läggas på dokument utan att ritas. Av som standard.</string>
+    <string name="sig2_none">Ingen signatur 2 än</string>
+    <string name="sig2_photo_paper">Fota signatur på papper</string>
+    <string name="sig2_photo_again">Fota igen</string>
+    <string name="sig2_from_file">Infoga bild från Download</string>
+    <string name="sig2_remove">Ta bort signatur 2</string>
+    <string name="sig2_remove_confirm">Ta bort signatur 2?</string>
+    <string name="sig2_name_label">Namn under signatur 2</string>
+    <string name="sig2_show_date">Visa datum under signatur 2</string>
+    <string name="sig2_not_found">Ingen signatur hittades i bilden. Använd mörkt bläck på vitt papper och fyll ramen.</string>
+    <string name="signer_sig2">Signatur 2 – %1$s</string>
+    <string name="sig2_short">sparad</string>
 </resources>

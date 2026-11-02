@@ -4,6 +4,62 @@
   "note": "Versionshistorik på svenska och engelska. Appen och webbversionen läser den här filen. Lägg nya versioner överst och höj version.txt.",
   "releases": [
     {
+      "version": "1.1",
+      "date": "2026-11-03",
+      "title": {
+        "sv": "Kameraval och signatur 2",
+        "en": "Camera choice and signature 2"
+      },
+      "summary": {
+        "sv": "Du väljer nu själv om fotot till din signatur ska tas med främre kameran (mot ansiktet) eller bakre kameran. Nytt är också signatur 2, ett tillval som är avstängt tills du slår på det i Inställningar. Signatur 2 är en färdig signatur som du fotar på papper eller infogar som bild från Hämtade filer (Download), med eget namn och datum. Den läggs på dokumentet utan att du behöver rita.",
+        "en": "You can now choose whether the photo for your signature is taken with the front camera (facing you) or the back camera. Also new is signature 2, an option that stays off until you turn it on in Settings. Signature 2 is a ready-made signature that you photograph on paper or insert as an image from Downloads, with its own name and date. It is placed on the document without drawing."
+      },
+      "changes": [
+        {
+          "type": "new",
+          "text": {
+            "sv": "Välj främre kameran (mot ansiktet) eller bakre kameran för fotot till signatur 1. Kameran kan också bytas i kameravyn.",
+            "en": "Choose the front camera (facing you) or the back camera for the signature 1 photo. You can also switch camera in the camera view."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Signatur 2 som tillval i Inställningar, avstängt som standard.",
+            "en": "Signature 2 as an option in Settings, off by default."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Fota signatur 2 på papper med valfri kamera. Papperet tas bort automatiskt och bara bläcket sparas.",
+            "en": "Photograph signature 2 on paper with either camera. The paper is removed automatically and only the ink is kept."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Infoga signatur 2 som bild från Hämtade filer (Download).",
+            "en": "Insert signature 2 as an image from Downloads."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Eget namn och datum under signatur 2.",
+            "en": "Its own name and date below signature 2."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Signatur 2 väljs när du trycker på Signatur och läggs in direkt på sidan.",
+            "en": "Signature 2 is chosen when you tap Signature and is placed directly on the page."
+          }
+        }
+      ]
+    },
+    {
       "version": "1.0",
       "date": "2026-11-02",
       "title": {

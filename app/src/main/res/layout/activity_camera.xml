@@ -12,6 +12,7 @@
 
     <!-- Ram i 3:4 som visar vad som kommer med på fotot -->
     <View
+        android:id="@+id/cameraFrame"
         android:layout_width="240dp"
         android:layout_height="320dp"
         android:layout_gravity="center"
@@ -19,6 +20,7 @@
         android:background="@drawable/bg_camera_frame" />
 
     <TextView
+        android:id="@+id/cameraHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
@@ -62,6 +64,15 @@
             android:contentDescription="@string/photo_take"
             android:focusable="true" />
 
-        <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+        <TextView
+            android:id="@+id/btnFlip"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/jakarta_bold"
+            android:gravity="center_vertical|end"
+            android:text="@string/camera_flip"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
     </LinearLayout>
 </FrameLayout>

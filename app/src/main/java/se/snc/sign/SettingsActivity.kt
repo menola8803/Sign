@@ -42,6 +42,25 @@ class SettingsActivity : BaseActivity() {
         renderPhoto()
     }
 
+    private val sig2CameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { renderSig2() }
+
+    /** Öppnar filväljaren i mappen Hämtade filer (Download). */
+    private class OpenInDownloads : ActivityResultContracts.OpenDocument() {
+        override fun createIntent(context: android.content.Context, input: Array<String>): Intent =
+            super.createIntent(context, input).putExtra(
+                android.provider.DocumentsContract.EXTRA_INITIAL_URI,
+                Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload")
+            )
+    }
+
+    private val sig2FileLauncher = registerForActivityResult(OpenInDownloads()) { uri ->
+        if (uri != null) lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) { runCatching { Store.saveSig2(this@SettingsActivity, uri) }.getOrDefault(false) }
+            if (!ok) Toast.makeText(this@SettingsActivity, R.string.sig2_not_found, Toast.LENGTH_LONG).show()
+            renderSig2()
+        }
+    }
+
     private val stampLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) lifecycleScope.launch {
             val name = displayName(uri)
@@ -81,7 +100,13 @@ class SettingsActivity : BaseActivity() {
         bindSwitch(R.id.switchShowName, Prefs.showName(this)) { Prefs.setShowName(this, it) }
 
         // Foto
-        findViewById<Button>(R.id.btnPhoto).setOnClickListener { cameraLauncher.launch(Intent(this, CameraActivity::class.java)) }
+        findViewById<Button>(R.id.btnPhoto).setOnClickListener {
+            cameraLauncher.launch(Intent(this, CameraActivity::class.java).putExtra(CameraActivity.EXTRA_LENS, Prefs.photoCamera(this)))
+        }
+        findViewById<RadioGroup>(R.id.photoCameraGroup).apply {
+            check(if (Prefs.photoCamera(this@SettingsActivity) == Camera.BACK) R.id.camBack else R.id.camFront)
+            setOnCheckedChangeListener { _, id -> Prefs.setPhotoCamera(this@SettingsActivity, if (id == R.id.camBack) Camera.BACK else Camera.FRONT) }
+        }
         findViewById<Button>(R.id.btnPhotoRemove).setOnClickListener {
             AlertDialog.Builder(this).setMessage(R.string.photo_remove_confirm)
                 .setPositiveButton(R.string.remove) { _, _ ->
@@ -91,6 +116,40 @@ class SettingsActivity : BaseActivity() {
         }
         bindSwitch(R.id.switchIncludePhoto, Prefs.includePhoto(this)) { Prefs.setIncludePhoto(this, it) }
         renderPhoto()
+
+        // Signatur 2 (tillval)
+        findViewById<Switch>(R.id.switchSig2).apply {
+            isChecked = Prefs.sig2Enabled(this@SettingsActivity)
+            setOnCheckedChangeListener { _, on -> Prefs.setSig2Enabled(this@SettingsActivity, on); renderSig2() }
+        }
+        findViewById<Button>(R.id.btnSig2Camera).setOnClickListener {
+            val lenses = arrayOf(getString(R.string.camera_back), getString(R.string.camera_front))
+            AlertDialog.Builder(this).setTitle(R.string.choose_camera)
+                .setItems(lenses) { _, i ->
+                    sig2CameraLauncher.launch(
+                        Intent(this, CameraActivity::class.java)
+                            .putExtra(CameraActivity.EXTRA_TARGET, CameraActivity.TARGET_SIG2)
+                            .putExtra(CameraActivity.EXTRA_LENS, if (i == 0) Camera.BACK else Camera.FRONT)
+                    )
+                }
+                .setNegativeButton(R.string.cancel, null).show()
+        }
+        findViewById<Button>(R.id.btnSig2File).setOnClickListener { sig2FileLauncher.launch(arrayOf("image/*")) }
+        findViewById<Button>(R.id.btnSig2Remove).setOnClickListener {
+            AlertDialog.Builder(this).setMessage(R.string.sig2_remove_confirm)
+                .setPositiveButton(R.string.remove) { _, _ -> Store.deleteSig2(this); renderSig2() }
+                .setNegativeButton(R.string.cancel, null).show()
+        }
+        findViewById<EditText>(R.id.sig2NameInput).apply {
+            setText(Prefs.sig2Name(this@SettingsActivity))
+            addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+                override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+                override fun afterTextChanged(s: Editable?) { Prefs.setSig2Name(this@SettingsActivity, s?.toString().orEmpty()) }
+            })
+        }
+        bindSwitch(R.id.switchSig2Date, Prefs.sig2Date(this)) { Prefs.setSig2Date(this, it) }
+        renderSig2()
 
         // Stämplar
         findViewById<Button>(R.id.btnAddStamp).setOnClickListener { stampLauncher.launch(arrayOf("image/png", "image/jpeg", "image/webp")) }
@@ -129,6 +188,16 @@ class SettingsActivity : BaseActivity() {
         findViewById<Button>(R.id.btnPhoto).setText(if (has) R.string.photo_retake else R.string.photo_take)
         findViewById<Button>(R.id.btnPhotoRemove).visibility = if (has) View.VISIBLE else View.GONE
         findViewById<Switch>(R.id.switchIncludePhoto).isChecked = Prefs.includePhoto(this)
+    }
+
+    private fun renderSig2() {
+        val on = Prefs.sig2Enabled(this)
+        findViewById<View>(R.id.sig2Options).visibility = if (on) View.VISIBLE else View.GONE
+        val bmp = if (Store.hasSig2(this)) Store.sig2(this) else null
+        findViewById<ImageView>(R.id.sig2Preview).setImageBitmap(bmp)
+        findViewById<View>(R.id.sig2Empty).visibility = if (bmp == null) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.btnSig2Remove).visibility = if (bmp == null) View.GONE else View.VISIBLE
+        findViewById<Button>(R.id.btnSig2Camera).setText(if (bmp == null) R.string.sig2_photo_paper else R.string.sig2_photo_again)
     }
 
     private fun renderStamps() {
