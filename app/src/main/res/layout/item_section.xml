@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Underrubrik i en lista, t.ex. "Other Seals" -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sectionTitle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="18dp"
+    android:fontFamily="@font/jakarta_bold"
+    android:letterSpacing="0.12"
+    android:textAllCaps="true"
+    android:textColor="@color/gold"
+    android:textSize="11sp" />

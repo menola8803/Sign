@@ -204,13 +204,22 @@ class SettingsActivity : BaseActivity() {
         val list = findViewById<LinearLayout>(R.id.stampList)
         list.removeAllViews()
         val selected = Prefs.cornerStamp(this)
-        for (s in Store.stamps(this)) {
+        val all = Store.stamps(this)
+        var otherHeader = false
+        fun header() {
+            otherHeader = true
+            list.addView(layoutInflater.inflate(R.layout.item_section, list, false).apply {
+                findViewById<TextView>(R.id.sectionTitle).setText(R.string.other_seals)
+            })
+        }
+        for (s in all) {
+            if (s.other && !otherHeader) header()
             val row = layoutInflater.inflate(R.layout.item_stamp, list, false)
             val isSel = s.id == selected
             row.isSelected = isSel
             row.findViewById<ImageView>(R.id.stampImage).setImageBitmap(Store.stampBitmap(this, s.id))
             row.findViewById<TextView>(R.id.stampName).text = s.name
-            row.findViewById<TextView>(R.id.stampKind).setText(if (s.builtin) R.string.stamp_builtin else R.string.stamp_own)
+            row.findViewById<TextView>(R.id.stampKind).setText(if (s.other) R.string.other_seal_kind else R.string.stamp_builtin)
             row.findViewById<TextView>(R.id.stampState).apply {
                 setText(if (isSel) R.string.stamp_selected else R.string.stamp_tap_to_choose)
                 setTextColor(ContextCompat.getColor(context, if (isSel) R.color.gold else R.color.dim))
@@ -232,6 +241,15 @@ class SettingsActivity : BaseActivity() {
                 Toast.makeText(this, tr(R.string.stamp_chosen, s.name), Toast.LENGTH_SHORT).show()
             }
             list.addView(row)
+        }
+        if (!otherHeader) {
+            header()
+            list.addView(TextView(this).apply {
+                setText(R.string.other_seals_empty)
+                setTextColor(ContextCompat.getColor(context, R.color.dim))
+                textSize = 13f
+                setPadding(0, (4 * resources.displayMetrics.density).toInt(), 0, 0)
+            })
         }
     }
 

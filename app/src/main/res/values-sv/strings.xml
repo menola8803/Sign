@@ -84,9 +84,9 @@
     <string name="include_photo">Lägg fotot bredvid min signatur</string>
     <string name="stamps_section">STÄMPLAR &amp; SIGILL</string>
     <string name="stamps_desc">Tryck på en stämpel för att välja vilken som läggs i vänstra hörnet på dokumentet. Den valda har guldram och bock. Lägg till fler stämplar som bilder; PNG med genomskinlig bakgrund blir snyggast.</string>
-    <string name="add_stamp_image">+ Lägg till stämpel</string>
+    <string name="add_stamp_image">+ Lägg till övrigt sigill</string>
     <string name="stamp_builtin">Inbyggt sigill</string>
-    <string name="stamp_own">Egen stämpel</string>
+    <string name="stamp_own">Övrigt sigill</string>
     <string name="stamp_failed">Kunde inte läsa bilden.</string>
     <string name="updates_section">UPPDATERINGAR</string>
     <string name="version">Version</string>
@@ -202,4 +202,7 @@ Vänliga hälsningar
     <string name="stamp_tap_to_choose">Tryck för att välja</string>
     <string name="stamp_chosen">%1$s är vald för vänstra hörnet.</string>
     <string name="stamp_remove_confirm">Ta bort %1$s?</string>
+    <string name="other_seals">Övriga sigill</string>
+    <string name="other_seal_kind">Övrigt sigill</string>
+    <string name="other_seals_empty">Inga övriga sigill än. Tryck på + Lägg till övrigt sigill.</string>
 </resources>

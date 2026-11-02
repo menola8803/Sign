@@ -90,9 +90,9 @@
     <string name="include_photo">Place photo next to my signature</string>
     <string name="stamps_section">STAMPS &amp; SEALS</string>
     <string name="stamps_desc">Tap a stamp to choose which one goes in the top left corner of the document. The selected one has a gold frame and a check mark. Add more stamps as images; PNG with a transparent background looks best.</string>
-    <string name="add_stamp_image">+ Add stamp</string>
+    <string name="add_stamp_image">+ Add other seal</string>
     <string name="stamp_builtin">Built-in seal</string>
-    <string name="stamp_own">Your stamp</string>
+    <string name="stamp_own">Other seal</string>
     <string name="stamp_failed">Could not read the image.</string>
     <string name="updates_section">UPDATES</string>
     <string name="version">Version</string>
@@ -211,4 +211,7 @@ Best regards
     <string name="stamp_tap_to_choose">Tap to select</string>
     <string name="stamp_chosen">%1$s is selected for the top left corner.</string>
     <string name="stamp_remove_confirm">Remove %1$s?</string>
+    <string name="other_seals">Other Seals</string>
+    <string name="other_seal_kind">Other seal</string>
+    <string name="other_seals_empty">No other seals yet. Tap + Add other seal to add one.</string>
 </resources>

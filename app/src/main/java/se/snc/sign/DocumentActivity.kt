@@ -350,7 +350,7 @@ class DocumentActivity : BaseActivity(), PageView.Host {
                 row.isClickable = false; row.isFocusable = false
                 row.findViewById<android.widget.ImageView>(R.id.stampImage).setImageBitmap(Store.stampBitmap(this@DocumentActivity, s.id))
                 row.findViewById<TextView>(R.id.stampName).text = s.name
-                row.findViewById<TextView>(R.id.stampKind).setText(if (s.builtin) R.string.stamp_builtin else R.string.stamp_own)
+                row.findViewById<TextView>(R.id.stampKind).setText(if (s.other) R.string.other_seal_kind else R.string.stamp_builtin)
                 row.findViewById<View>(R.id.stampState).visibility = View.GONE
                 row.findViewById<View>(R.id.stampCheck).visibility = View.GONE
                 row.findViewById<View>(R.id.stampRemove).visibility = View.GONE

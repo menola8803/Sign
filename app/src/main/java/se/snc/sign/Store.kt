@@ -37,19 +37,36 @@ object Store {
     private fun stampDir(ctx: Context) = File(ctx.filesDir, "stamps").apply { mkdirs() }
     fun signatureDir(ctx: Context) = File(ctx.cacheDir, "signatures").apply { mkdirs() }
 
-    data class Stamp(val id: String, val name: String, val builtin: Boolean)
+    /**
+     * En stämpel eller ett sigill.
+     * builtin = följer med appen (kan inte tas bort). other = hör till "Other Seals".
+     */
+    data class Stamp(val id: String, val name: String, val builtin: Boolean, val other: Boolean = !builtin)
+
+    private const val ASSET_DIR = "seals"
+    private const val ASSET_PREFIX = "asset:"
+
+    /** Inbyggda övriga sigill: varje bild i app/src/main/assets/seals/ blir ett sigill under "Other Seals". */
+    private fun bundledSeals(ctx: Context): List<Stamp> =
+        (runCatching { ctx.assets.list(ASSET_DIR)?.toList() }.getOrNull() ?: emptyList())
+            .filter { it.endsWith(".png", true) || it.endsWith(".jpg", true) || it.endsWith(".webp", true) }
+            .sorted()
+            .map { f -> Stamp(ASSET_PREFIX + f, f.substringBeforeLast('.').replace('_', ' ').replace('-', ' '), builtin = true, other = true) }
 
     fun stamps(ctx: Context): List<Stamp> =
         listOf(
-            Stamp(Seal.LOGO_ID, "S.N.C – Scandinavian Nexum Consulting", true),
-            Stamp(Seal.ID, "Scandinavian Nexum Consulting AB", true),
-        ) +
+            Stamp(Seal.LOGO_ID, "S.N.C – Scandinavian Nexum Consulting", builtin = true, other = false),
+            Stamp(Seal.ID, "Scandinavian Nexum Consulting AB", builtin = true, other = false),
+        ) + bundledSeals(ctx) +
             (stampDir(ctx).listFiles()?.filter { it.extension == "png" }?.sortedBy { it.lastModified() } ?: emptyList())
-                .map { Stamp(it.nameWithoutExtension, it.nameWithoutExtension.substringAfter('_').replace('-', ' '), false) }
+                .map { Stamp(it.nameWithoutExtension, it.nameWithoutExtension.substringAfter('_').replace('-', ' '), builtin = false, other = true) }
 
     fun stampBitmap(ctx: Context, id: String): Bitmap? =
         if (id == Seal.LOGO_ID) Seal.logo(ctx)
         else if (id == Seal.ID) Seal.bitmap(ctx)
+        else if (id.startsWith(ASSET_PREFIX)) runCatching {
+            ctx.assets.open(ASSET_DIR + "/" + id.removePrefix(ASSET_PREFIX)).use { BitmapFactory.decodeStream(it) }
+        }.getOrNull()
         else File(stampDir(ctx), "$id.png").takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.path) }
 
     /** Läser in en bild som ny stämpel, nedskalad till högst 900 px. */
