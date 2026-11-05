@@ -80,4 +80,8 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.4")
     // Skriver signatur, foto och sigill i den ursprungliga PDF:en
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    // Läser gamla Word-filer (.doc)
+    implementation("org.apache.poi:poi-scratchpad:3.17")
+    // Fota dokument: skanner som hittar kanterna, flera sidor
+    implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
 }

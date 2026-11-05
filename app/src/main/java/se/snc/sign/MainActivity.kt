@@ -2,48 +2,120 @@ package se.snc.sign
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.text.buildSpannedString
-import androidx.core.text.color
 import androidx.lifecycle.lifecycleScope
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import kotlinx.coroutines.launch
 
-/** Hemskärmen: öppna ett dokument, inställningar och utveckling. Visar startskärmen vid kallstart. */
+/**
+ * Hemskärmen (design A): S.N.C-loggan överst, "Fota dokument" och "Öppna dokument",
+ * senaste sparade dokument, Kontakter och Uppdateringar. Kugghjulet uppe till höger.
+ */
 class MainActivity : BaseActivity() {
 
-    private val openLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+    private lateinit var recent: LinearLayout
+    private lateinit var savedTitle: TextView
+    private lateinit var contactsSub: TextView
+    private lateinit var updateDot: View
+
+    private val openLauncher = registerForActivityResult(OpenInDownloads()) { uri ->
         if (uri != null) startActivity(Intent(this, DocumentActivity::class.java).setData(uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
+    }
+
+    private val scanLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { r ->
+        if (r.resultCode != RESULT_OK) return@registerForActivityResult
+        val pdf = GmsDocumentScanningResult.fromActivityResultIntent(r.data)?.pdf?.uri ?: return@registerForActivityResult
+        startActivity(Intent(this, DocumentActivity::class.java).setData(pdf)
+            .putExtra(DocumentActivity.EXTRA_SCANNED, true).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        fadedTopScreen(findViewById(R.id.root), findViewById(R.id.scroll), findViewById(R.id.statusBg), findViewById(R.id.topScrim), findViewById(R.id.btnSettings), findViewById(R.id.sncLogo))
+        Profile.migrate(this)
+        val c = this
+        val d = resources.displayMetrics.density
+        fun dp(v: Int) = (v * d).toInt()
+        val screen = Screen(this, null)
 
-        findViewById<TextView>(R.id.headline).text = buildSpannedString {
-            append(getString(R.string.home_headline_1) + " ")
-            color(ContextCompat.getColor(this@MainActivity, R.color.mint)) { append(getString(R.string.home_headline_2)) }
+        // Loggan med ett mjukt sken bakom
+        val head = LinearLayout(c).apply {
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
+            setBackgroundResource(R.drawable.bg_home_glow); setPadding(0, dp(40), 0, dp(8))
         }
-        findViewById<View>(R.id.cardOpen).setOnClickListener {
-            openLauncher.launch(arrayOf("application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+        head.addView(ImageView(c).apply {
+            setImageResource(R.drawable.snc_header); adjustViewBounds = true; contentDescription = getString(R.string.company_full)
+        }, LinearLayout.LayoutParams(dp(250), -2))
+        head.addView(TextView(c).apply {
+            text = "SIGN"; letterSpacing = 0.3f; textSize = 16f; setTextColor(Kit.color(c, R.color.gold))
+            typeface = ResourcesCompat.getFont(c, R.font.cinzel_bold); gravity = Gravity.CENTER
+        }, Kit.lp(c, top = 10))
+        head.addView(Kit.text(c, getString(R.string.tagline).uppercase(Lang.locale(c)), 9.5f, R.color.mint, isBold = true).apply {
+            letterSpacing = 0.22f; gravity = Gravity.CENTER
+        })
+        screen.add(head)
+
+        // De två huvudvalen
+        screen.add(action("⌗", getString(R.string.scan_document), getString(R.string.scan_document_sub), primary = true) { scan() }, 18)
+        screen.add(action("📄", getString(R.string.open_document), getString(R.string.open_document_sub), primary = false) {
+            openLauncher.launch(DocFormat.PICKER_MIMES)
+        }, 10)
+
+        // Sparade dokument
+        val savedHead = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        savedTitle = Kit.section(c, getString(R.string.saved_documents))
+        savedHead.addView(savedTitle, LinearLayout.LayoutParams(0, -2, 1f))
+        savedHead.addView(Kit.text(c, getString(R.string.see_all) + "  ›", 13f, R.color.gold, isBold = true).apply {
+            setPadding(dp(8), dp(22), dp(4), dp(6)); setBackgroundResource(R.drawable.bg_row)
+            setOnClickListener { startActivity(Intent(c, LibraryActivity::class.java)) }
+        })
+        screen.add(savedHead)
+        recent = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL }
+        screen.add(HorizontalScrollView(c).apply { isHorizontalScrollBarEnabled = false; addView(recent) })
+
+        // Kontakter och Uppdateringar
+        val more = Kit.card(c, 6)
+        val contactsRow = Kit.row(c, "👥", getString(R.string.contacts), "") { startActivity(Intent(c, ContactsActivity::class.java)) }
+        contactsSub = (contactsRow.getChildAt(1) as LinearLayout).getChildAt(1) as TextView
+        more.addView(contactsRow)
+        val updRow = Kit.row(c, "↻", getString(R.string.updates_section), tr(R.string.version_line, UpdateChecker.currentVersionName(c))) {
+            startActivity(Intent(c, SettingsActivity::class.java))
         }
-        findViewById<View>(R.id.rowSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
-        findViewById<View>(R.id.rowContacts).setOnClickListener { startActivity(Intent(this, ContactsActivity::class.java)) }
-        findViewById<View>(R.id.rowDev).setOnClickListener { startActivity(Intent(this, DevActivity::class.java)) }
-        findViewById<View>(R.id.btnSettings).setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
-        findViewById<TextView>(R.id.homeVersion).text = tr(R.string.version_line, UpdateChecker.currentVersionName(this))
+        updateDot = View(c).apply { setBackgroundResource(R.drawable.bg_dot); visibility = View.GONE }
+        updRow.addView(updateDot, 2, LinearLayout.LayoutParams(dp(10), dp(10)).apply { marginEnd = dp(8) })
+        more.addView(updRow)
+        screen.add(more, 18)
+
+        screen.add(Kit.text(c, tr(R.string.footer_line, UpdateChecker.featureVersion(UpdateChecker.currentVersionName(c))), 12f, R.color.dim).apply {
+            gravity = Gravity.CENTER; setPadding(0, dp(22), 0, dp(6))
+        })
+
+        // Kugghjulet uppe till höger
+        val gear = ImageView(c).apply {
+            setImageResource(R.drawable.ic_settings); setBackgroundResource(R.drawable.bg_round_button)
+            val p = dp(10); setPadding(p, p, p, p); contentDescription = getString(R.string.settings); elevation = dp(4).toFloat()
+            setOnClickListener { startActivity(Intent(c, SettingsActivity::class.java)) }
+        }
+        screen.root.addView(gear, FrameLayout.LayoutParams(dp(44), dp(44), Gravity.TOP or Gravity.END).apply { topMargin = dp(10); rightMargin = dp(14) })
+        screen.show(gear)
 
         // Signs egen startskärm, i samma stil som Trace. Visas vid varje kallstart.
         if (savedInstanceState == null) {
-            val root = findViewById<FrameLayout>(R.id.root)
-            root.addView(
-                StartScreenView(this) { root.removeView(it) }.apply { elevation = 100f * resources.displayMetrics.density },
+            screen.root.addView(
+                StartScreenView(this) { screen.root.removeView(it) }.apply { elevation = 100f * d },
                 FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
             )
         }
@@ -52,16 +124,56 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        val n = Contacts.all(this).size
-        findViewById<TextView>(R.id.contactsLine).text = if (n == 0) getString(R.string.contacts_sub) else tr(R.string.contacts_count, n)
-        val photo = Store.hasPhoto(this) && Prefs.includePhoto(this)
-        val name = Prefs.name(this)
-        findViewById<TextView>(R.id.profileLine).text = when {
-            name.isNotBlank() && photo -> tr(R.string.profile_name_photo, name)
-            name.isNotBlank() -> name
-            photo -> getString(R.string.profile_photo_only)
-            else -> getString(R.string.profile_empty)
+        val n = runCatching { ContactBook.all(this).size }.getOrDefault(0)
+        contactsSub.text = if (n == 0) getString(R.string.contacts_sub) else tr(R.string.contacts_count, n)
+        renderRecent()
+    }
+
+    private fun renderRecent() {
+        val d = resources.displayMetrics.density
+        recent.removeAllViews()
+        val docs = LibDoc.all(this)
+        savedTitle.text = (getString(R.string.saved_documents) + if (docs.isNotEmpty()) " (${docs.size})" else "").uppercase(Lang.locale(this))
+        if (docs.isEmpty()) {
+            recent.addView(Kit.text(this, getString(R.string.no_saved_docs), 13f, R.color.dim))
+            return
         }
+        docs.take(6).forEachIndexed { i, doc ->
+            recent.addView(DocCard.make(this, doc) {
+                startActivity(Intent(this, DocPreviewActivity::class.java).putExtra(DocumentActivity.EXTRA_LIB_ID, doc.id))
+            }, LinearLayout.LayoutParams((132 * d).toInt(), -2).apply { if (i > 0) marginStart = (10 * d).toInt() })
+        }
+    }
+
+    private fun action(icon: String, title: String, sub: String, primary: Boolean, onClick: () -> Unit): View {
+        val c = this
+        val d = resources.displayMetrics.density
+        val row = LinearLayout(c).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+            setBackgroundResource(if (primary) R.drawable.bg_card_primary else R.drawable.bg_card)
+            val p = (16 * d).toInt(); setPadding(p, p, p, p); minimumHeight = (84 * d).toInt()
+            setOnClickListener { onClick() }
+        }
+        row.addView(Kit.chip(c, icon).apply { textSize = 22f }, LinearLayout.LayoutParams((52 * d).toInt(), (52 * d).toInt()))
+        val t = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; setPadding((14 * d).toInt(), 0, 0, 0) }
+        t.addView(Kit.text(c, title, 18f, isBold = true))
+        t.addView(Kit.text(c, sub, 12.5f, R.color.muted))
+        row.addView(t, LinearLayout.LayoutParams(0, -2, 1f))
+        row.addView(Kit.text(c, "›", 26f, R.color.gold))
+        return row
+    }
+
+    /** Dokumentskannern: hittar kanterna automatiskt, flera sidor, huvudkameran. Blir en PDF. */
+    private fun scan() {
+        val options = GmsDocumentScannerOptions.Builder()
+            .setGalleryImportAllowed(true)
+            .setPageLimit(30)
+            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
+            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
+            .build()
+        GmsDocumentScanning.getClient(options).getStartScanIntent(this)
+            .addOnSuccessListener { scanLauncher.launch(IntentSenderRequest.Builder(it).build()) }
+            .addOnFailureListener { Toast.makeText(this, R.string.scanner_failed, Toast.LENGTH_LONG).show() }
     }
 
     /** Söker efter ny version högst en gång per dygn, om det är påslaget i inställningarna. */
@@ -72,7 +184,7 @@ class MainActivity : BaseActivity() {
             val latest = try { UpdateChecker.latest(this@MainActivity) } catch (e: Exception) { return@launch }
             Prefs.setLastUpdateCheck(this@MainActivity, System.currentTimeMillis())
             if (latest.build > UpdateChecker.currentBuild(this@MainActivity)) {
-                findViewById<View>(R.id.updateDot).visibility = View.VISIBLE
+                updateDot.visibility = View.VISIBLE
                 UpdateChecker.offer(this@MainActivity, latest)
             }
         }

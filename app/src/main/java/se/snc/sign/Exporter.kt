@@ -31,22 +31,37 @@ object Exporter {
     fun exportDocx(ctx: Context, source: File, pages: ImagePages, fields: List<Field>, out: File) {
         val e = DocxWriter.EMU_PER_PT.toFloat()
         val placements = fields.filter { it.done && it.page < pages.count }.mapNotNull { f ->
-            val wPt = f.w * pages.widthPt(f.page); val hPt = f.h * pages.heightPt(f.page)
-            val comp = Composer.compose(ctx, f, (wPt * PX_PER_PT).toInt(), (hPt * PX_PER_PT).toInt()) ?: return@mapNotNull null
-            val png = java.io.ByteArrayOutputStream().use { comp.compress(Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
+            val pw = pages.widthPt(f.page); val ph = pages.heightPt(f.page)
+            val (img, r) = Composer.render(ctx, f, pw, ph, PX_PER_PT) ?: return@mapNotNull null
+            val png = java.io.ByteArrayOutputStream().use { img.compress(Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
             DocxWriter.Placement(
                 anchor = pages.anchors.getOrElse(f.page) { 0 },
-                x = (f.x * pages.widthPt(f.page) * e).toLong(),
-                y = (f.y * pages.heightPt(f.page) * e).toLong(),
-                cx = (wPt * e).toLong(), cy = (hPt * e).toLong(), png = png,
+                x = (r.left * pw * e).toLong(), y = (r.top * ph * e).toLong(),
+                cx = (r.width() * pw * e).toLong(), cy = (r.height() * ph * e).toLong(), png = png,
             )
         }
         DocxWriter.write(source, out, placements)
     }
 
-    fun export(ctx: Context, source: File, isPdf: Boolean, pages: Pages, fields: List<Field>, out: File) {
+    /** Signerad ODT: originalet med bilderna inlagda, förankrade på rätt sida. */
+    fun exportOdt(ctx: Context, source: File, pages: ImagePages, fields: List<Field>, out: File) {
+        val placements = fields.filter { it.done && it.page < pages.count }.mapNotNull { f ->
+            val pw = pages.widthPt(f.page); val ph = pages.heightPt(f.page)
+            val (img, r) = Composer.render(ctx, f, pw, ph, PX_PER_PT) ?: return@mapNotNull null
+            val png = java.io.ByteArrayOutputStream().use { img.compress(Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
+            OdtWriter.Placement(f.page + 1, r.left * pw, r.top * ph, r.width() * pw, r.height() * ph, png)
+        }
+        OdtWriter.write(source, out, placements)
+    }
+
+    /**
+     * Signerad PDF. För en PDF skrivs bilderna in i originalet (text och vektorer behålls).
+     * För Word, ODT, DOC och fotograferade dokument blir det en ny PDF med en bild per sida.
+     * password används för lösenordsskyddade PDF:er.
+     */
+    fun export(ctx: Context, source: File, isPdf: Boolean, pages: Pages, fields: List<Field>, out: File, password: String? = null) {
         PDFBoxResourceLoader.init(ctx.applicationContext)
-        val doc = if (isPdf) PDDocument.load(source) else PDDocument()
+        val doc = if (isPdf) (if (password != null) PDDocument.load(source, password) else PDDocument.load(source)) else PDDocument()
         doc.use { d ->
             if (!isPdf) {
                 val img = pages as ImagePages
@@ -68,19 +83,18 @@ object Exporter {
                 // Sidan som den visas (efter rotation)
                 val dispW = if (rot == 90 || rot == 270) box.height else box.width
                 val dispH = if (rot == 90 || rot == 270) box.width else box.height
-                val pxW = (f.w * dispW * PX_PER_PT).toInt()
-                val pxH = (f.h * dispH * PX_PER_PT).toInt()
-                val comp = Composer.compose(ctx, f, pxW, pxH) ?: continue
+                val (comp, r) = Composer.render(ctx, f, dispW, dispH, PX_PER_PT) ?: continue
+                val fx = r.left; val fy = r.top; val fw = r.width(); val fh = r.height()
 
                 // Visningskoordinater (origo uppe till vänster) räknas om till PDF-koordinater.
                 val W = box.width; val H = box.height
                 val llx = box.lowerLeftX; val lly = box.lowerLeftY
                 val urx = box.upperRightX; val ury = box.upperRightY
                 val (x0, x1, y0, y1) = when (rot) {
-                    90 -> listOf(llx + f.y * W, llx + (f.y + f.h) * W, lly + f.x * H, lly + (f.x + f.w) * H)
-                    180 -> listOf(urx - (f.x + f.w) * W, urx - f.x * W, lly + f.y * H, lly + (f.y + f.h) * H)
-                    270 -> listOf(urx - (f.y + f.h) * W, urx - f.y * W, ury - (f.x + f.w) * H, ury - f.x * H)
-                    else -> listOf(llx + f.x * W, llx + (f.x + f.w) * W, ury - (f.y + f.h) * H, ury - f.y * H)
+                    90 -> listOf(llx + fy * W, llx + (fy + fh) * W, lly + fx * H, lly + (fx + fw) * H)
+                    180 -> listOf(urx - (fx + fw) * W, urx - fx * W, lly + fy * H, lly + (fy + fh) * H)
+                    270 -> listOf(urx - (fy + fh) * W, urx - fy * W, ury - (fx + fw) * H, ury - fx * H)
+                    else -> listOf(llx + fx * W, llx + (fx + fw) * W, ury - (fy + fh) * H, ury - fy * H)
                 }
                 // Bilden vrids mot sidans rotation så att den syns rättvänd.
                 val upright = if (rot == 0) comp else Bitmap.createBitmap(
@@ -92,7 +106,7 @@ object Exporter {
                 }
             }
             d.documentInformation.apply {
-                producer = "Sign – Claes Sundman, S.N.C AB"
+                producer = "Sign – Claes Sundman, Scandinavian Nexum Consulting AB"
                 creator = "Sign"
                 modificationDate = Calendar.getInstance()
             }

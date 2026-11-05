@@ -79,6 +79,14 @@ object Store {
         return true
     }
 
+    /** Sparar en färdig bild (t.ex. en logga med borttagen bakgrund) som nytt sigill under "Other Seals". */
+    fun addStampBitmap(ctx: Context, bmp: Bitmap, displayName: String?): String {
+        val safe = (displayName ?: "logo").replace(Regex("[^A-Za-z0-9åäöÅÄÖ]+"), "-").trim('-').take(40).ifBlank { "logo" }
+        val id = "${System.currentTimeMillis()}_$safe"
+        FileOutputStream(File(stampDir(ctx), "$id.png")).use { scaleDown(bmp, 900).compress(Bitmap.CompressFormat.PNG, 100, it) }
+        return id
+    }
+
     fun deleteStamp(ctx: Context, id: String) { File(stampDir(ctx), "$id.png").delete() }
 
     fun scaleDown(b: Bitmap, max: Int): Bitmap {

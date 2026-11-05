@@ -54,6 +54,14 @@
             android:textSize="12sp" />
     </LinearLayout>
 
+    <!-- Svart under statusraden -->
+    <View
+        android:id="@+id/statusBg"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="top"
+        android:background="#FF000000" />
+
     <TextView
         android:id="@+id/hint"
         android:layout_width="wrap_content"
@@ -140,6 +148,68 @@
             android:text="@string/save_signed"
             android:textColor="@color/on_gold"
             android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Vrid stämpeln: reglage −45..45°, ±5° och 0° -->
+    <LinearLayout
+        android:id="@+id/rotatePanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="100dp"
+        android:background="@drawable/bg_rotate_panel"
+        android:elevation="10dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/jakarta_bold"
+                android:text="@string/rotate_stamp"
+                android:textColor="@color/ink"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/rotateValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/jakarta_bold"
+                android:textColor="@color/gold"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/rotateSeek"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:max="90"
+            android:progress="45" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView android:id="@+id/rotMinus" style="@style/Sign.RotBtn" android:text="−5°" />
+            <TextView android:id="@+id/rotZero" style="@style/Sign.RotBtn" android:layout_marginStart="6dp" android:text="0°" />
+            <TextView android:id="@+id/rotPlus" style="@style/Sign.RotBtn" android:layout_marginStart="6dp" android:text="+5°" />
+            <TextView
+                android:id="@+id/rotDone"
+                style="@style/Sign.RotBtn"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1.4"
+                android:background="@drawable/bg_button_primary"
+                android:text="@string/done"
+                android:textColor="@color/on_gold" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout

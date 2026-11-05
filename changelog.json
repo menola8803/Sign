@@ -1,8 +1,106 @@
 {
   "app": "Sign",
-  "developer": "Claes Sundman S.N.C AB",
+  "developer": "Claes Sundman",
   "note": "Versionshistorik på svenska och engelska. Appen och webbversionen läser den här filen. Lägg nya versioner överst och höj version.txt.",
   "releases": [
+    {
+      "version": "1.2",
+      "date": "2026-11-05",
+      "title": {
+        "sv": "Ny hemskärm, sparade dokument och fler format",
+        "en": "New home screen, saved documents and more formats"
+      },
+      "summary": {
+        "sv": "Sign har fått en ny hemskärm med S.N.C-loggan, Fota dokument och Öppna dokument. Alla dokument sparas med förhandsvisning och status, och kan delas till de flesta appar. Sign läser nu PDF, Word (.docx och .doc) och OpenDocument (.odt). Signatur 1, 2 och 3 har samma upplägg med senaste signatur och foto sparade, och appen frågar innan de används. Kontakterna kan synkas med telefonen.",
+        "en": "Sign has a new home screen with the S.N.C logo, Photograph document and Open document. Every document is saved with a preview and status, and can be shared to most apps. Sign now reads PDF, Word (.docx and .doc) and OpenDocument (.odt). Signatures 1, 2 and 3 share the same layout, the latest signature and photo are kept, and the app asks before they are used. Contacts can be synced with the phone."
+      },
+      "changes": [
+        {
+          "type": "new",
+          "text": {
+            "sv": "Ny hemskärm med S.N.C-loggan. Svart under statusraden som tonar över i appens färg.",
+            "en": "New home screen with the S.N.C logo. Black under the status bar fading into the app colour."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Fota dokument: skanner som hittar kanterna och klarar flera sidor.",
+            "en": "Photograph document: a scanner that finds the edges and handles several pages."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Öppna dokument känner själv igen PDF, .docx, .doc och .odt. Lösenordsskyddade PDF:er frågar efter lösenordet.",
+            "en": "Open document recognises PDF, .docx, .doc and .odt by itself. Password-protected PDFs ask for the password."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Spara som samma format som originalet: PDF, Word eller ODT. Gamla .doc sparas som PDF.",
+            "en": "Save in the same format as the original: PDF, Word or ODT. Old .doc files are saved as PDF."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Sparade dokument med miniatyr, status (Signerad, 1 av 2, Inte signerad), filter och stor förhandsvisning. Ofärdiga dokument sparas också.",
+            "en": "Saved documents with a thumbnail, status (Signed, 1 of 2, Not signed), filters and a large preview. Unfinished documents are saved too."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Dela till WhatsApp, Gmail, Drive och andra appar, skicka till en kontakt eller spara i Download.",
+            "en": "Share to WhatsApp, Gmail, Drive and other apps, send to a contact or save to Download."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Signatur 1, 2 och 3 har samma upplägg: förhandsvisning med tid, namn, datum, foto bredvid, kamera, vem som signerar och kontakter. Främre kameran är standard.",
+            "en": "Signatures 1, 2 and 3 share the same layout: preview with time, name, date, photo beside, camera, who signs and contacts. The front camera is the default."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Senaste signatur och foto sparas. Innan de används frågar appen om de ska användas, eller om du vill ta nya.",
+            "en": "The latest signature and photo are kept. Before they are used, the app asks whether to use them or take new ones."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Vrid stämpeln med handtaget eller reglaget innan den sparas.",
+            "en": "Rotate a stamp with the handle or the slider before saving."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Läs in en logga och ta bort bakgrunden så att bara symbol och text blir kvar.",
+            "en": "Import a logo and remove the background so only the symbol and text remain."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Kontakter A–Ö med sök, snabbknappar, svep för att ta bort med Ångra, flerval och synk åt båda hållen med telefonens kontakter.",
+            "en": "Contacts A–Z with search, quick buttons, swipe to delete with Undo, multi-select and two-way sync with the phone's contacts."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Utvecklare och versionsnummer visas under Inställningar → Uppdateringar.",
+            "en": "Developer and version number are shown under Settings → Updates."
+          }
+        }
+      ]
+    },
     {
       "version": "1.1",
       "date": "2026-11-03",

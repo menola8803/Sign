@@ -31,11 +31,18 @@ class CameraActivity : BaseActivity() {
     companion object {
         const val EXTRA_TARGET = "se.snc.sign.TARGET"
         const val EXTRA_LENS = "se.snc.sign.LENS"
+        const val EXTRA_PROFILE = "se.snc.sign.PROFILE"
+        /** Sökväg till fotot för TARGET_LOGO. */
+        const val EXTRA_RESULT = "se.snc.sign.RESULT"
         const val TARGET_PHOTO = "photo"
-        const val TARGET_SIG2 = "sig2"
+        /** Signatur på papper för signatur 1, 2 eller 3. */
+        const val TARGET_SIG2 = "sig"
+        /** En logga eller stämpel som sedan får bakgrunden borttagen. */
+        const val TARGET_LOGO = "logo"
     }
 
     private val target by lazy { intent.getStringExtra(EXTRA_TARGET) ?: TARGET_PHOTO }
+    private val profile by lazy { Profile(this, intent.getIntExtra(EXTRA_PROFILE, 1)) }
     private var lens = Camera.FRONT
 
     private var capture: ImageCapture? = null
@@ -57,7 +64,8 @@ class CameraActivity : BaseActivity() {
             bar.updatePadding(bottom = pb + b.bottom)
             insets
         }
-        lens = intent.getStringExtra(EXTRA_LENS) ?: if (target == TARGET_SIG2) Camera.BACK else Prefs.photoCamera(this)
+        // Främre kameran är standard för foto och signatur; bakre för loggor
+        lens = intent.getStringExtra(EXTRA_LENS) ?: if (target == TARGET_LOGO) Camera.BACK else profile.camera
         if (target == TARGET_SIG2) {
             // Bred ram för en signatur på papper
             val d = resources.displayMetrics.density
@@ -119,14 +127,22 @@ class CameraActivity : BaseActivity() {
                 if (target == TARGET_SIG2) {
                     val frame = findViewById<View>(R.id.cameraFrame)
                     val prev = findViewById<View>(R.id.preview)
-                    val ok = Store.saveSig2(this@CameraActivity, cropToFrame(upright, frame, prev))
+                    val ink = InkExtractor.extract(Store.scaleDown(cropToFrame(upright, frame, prev), 2000))
+                    if (ink != null) profile.saveSignature(ink, Profile.SOURCE_PHOTO)
+                    val ok = ink != null
                     if (!ok) {
                         Toast.makeText(this@CameraActivity, R.string.sig2_not_found, Toast.LENGTH_LONG).show()
                         findViewById<View>(R.id.btnShutter).isEnabled = true
                         return
                     }
+                } else if (target == TARGET_LOGO) {
+                    val f = java.io.File(cacheDir, "logo-${System.currentTimeMillis()}.jpg")
+                    FileOutputStream(f).use { Store.scaleDown(upright, 1800).compress(Bitmap.CompressFormat.JPEG, 92, it) }
+                    setResult(RESULT_OK, android.content.Intent().putExtra(EXTRA_RESULT, f.path))
+                    finish()
+                    return
                 } else {
-                    save(cropPortrait(upright))
+                    profile.savePhoto(cropPortrait(upright))
                 }
                 setResult(RESULT_OK)
                 finish()

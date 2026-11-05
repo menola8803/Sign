@@ -24,6 +24,8 @@ class SignActivity : BaseActivity() {
         const val EXTRA_TITLE = "se.snc.sign.TITLE"
         const val EXTRA_FILE = "se.snc.sign.FILE"
         const val EXTRA_SHOW_PHOTO = "se.snc.sign.SHOW_PHOTO"
+        /** Sökväg till fotot som visas bredvid ytan (signaturens profil). */
+        const val EXTRA_PHOTO_PATH = "se.snc.sign.PHOTO_PATH"
     }
 
     private lateinit var pad: SignatureView
@@ -49,9 +51,11 @@ class SignActivity : BaseActivity() {
         findViewById<TextView>(R.id.signWhere).text = intent.getStringExtra(EXTRA_TITLE).orEmpty()
 
         val photo = findViewById<ImageView>(R.id.signPhoto)
-        if (intent.getBooleanExtra(EXTRA_SHOW_PHOTO, true) && Prefs.includePhoto(this) && Store.hasPhoto(this)) {
+        val photoPath = intent.getStringExtra(EXTRA_PHOTO_PATH)
+        val bmp = photoPath?.let { android.graphics.BitmapFactory.decodeFile(it) }
+        if (bmp != null) {
             photo.visibility = View.VISIBLE
-            photo.setImageBitmap(Store.photo(this))
+            photo.setImageBitmap(bmp)
         }
 
         val blue = findViewById<View>(R.id.inkBlue)

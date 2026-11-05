@@ -20,7 +20,14 @@ import kotlin.coroutines.resumeWithException
 class DocxRenderer(private val activity: Activity) {
 
     @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
-    suspend fun render(docx: File, outDir: File, onProgress: (Int, Int) -> Unit): ImagePages =
+    /**
+     * mode: "docx" (docx-preview), "odt" (läses i JavaScript) eller "html" (färdig HTML, t.ex. från .doc).
+     * layoutJson: sidstorlek och marginaler i CSS-pixlar för "html".
+     */
+    suspend fun render(
+        docx: File, outDir: File, onProgress: (Int, Int) -> Unit,
+        mode: String = "docx", html: String? = null, layoutJson: String? = null,
+    ): ImagePages =
         suspendCancellableCoroutine { cont ->
             outDir.deleteRecursively(); outDir.mkdirs()
             val files = ArrayList<File>()
@@ -49,6 +56,15 @@ class DocxRenderer(private val activity: Activity) {
                 fun docx(): String = Base64.encodeToString(docx.readBytes(), Base64.NO_WRAP)
 
                 @JavascriptInterface
+                fun mode(): String = mode
+
+                @JavascriptInterface
+                fun html(): String = html ?: ""
+
+                @JavascriptInterface
+                fun layout(): String = layoutJson ?: """{"w":793.7,"h":1122.5,"mt":75.6,"mb":75.6,"ml":75.6,"mr":75.6}"""
+
+                @JavascriptInterface
                 fun page(index: Int, total: Int, widthPx: Float, heightPx: Float, anchor: Int, jpegBase64: String) {
                     val f = File(outDir, "page-%03d.jpg".format(index))
                     f.writeBytes(Base64.decode(jpegBase64, Base64.DEFAULT))
@@ -68,7 +84,7 @@ class DocxRenderer(private val activity: Activity) {
             }, "Android")
             web.webViewClient = WebViewClient()
             host.addView(web, 0, FrameLayout.LayoutParams(1200, 1600))
-            web.loadUrl("file:///android_asset/docx/render.html")
+            web.loadUrl(if (mode == "docx") "file:///android_asset/docx/render.html" else "file:///android_asset/docx/render-html.html")
             cont.invokeOnCancellation { finish(null) }
         }
 }

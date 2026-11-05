@@ -13,7 +13,12 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-/** Ett signaturfält eller en stämpel. Läge och storlek anges som andel av sidan (0–1). */
+/**
+ * Ett signaturfält, ett foto eller en stämpel. Läge och storlek anges som andel av sidan (0–1),
+ * rot är vridningen i grader (används för stämplar).
+ * file = signaturens eller fotots bild (kopierad till dokumentets egen mapp så att den aldrig ändras i efterhand).
+ * signer = vem som ska signera fältet (för "Väntar på …").
+ */
 data class Field(
     val id: Long,
     val type: Type,
@@ -23,10 +28,29 @@ data class Field(
     var sigFile: String? = null,
     var name: String = "",
     var date: String = "",
+    var rot: Float = 0f,
+    var signer: String = "",
+    var profile: Int = 0,
 ) {
-    /** Signatur (med namn och datum), foto från frontkameran eller stämpel/sigill. */
     enum class Type { SIGN, PHOTO, STAMP }
     val done get() = type != Type.SIGN || sigFile != null
+
+    fun toJson(): org.json.JSONObject = org.json.JSONObject()
+        .put("id", id).put("type", type.name).put("page", page)
+        .put("x", x.toDouble()).put("y", y.toDouble()).put("w", w.toDouble()).put("h", h.toDouble())
+        .put("stamp", stampId ?: "").put("file", sigFile ?: "").put("name", name).put("date", date)
+        .put("rot", rot.toDouble()).put("signer", signer).put("profile", profile)
+
+    companion object {
+        fun fromJson(o: org.json.JSONObject) = Field(
+            id = o.optLong("id"), type = runCatching { Type.valueOf(o.optString("type")) }.getOrDefault(Type.STAMP),
+            page = o.optInt("page"),
+            x = o.optDouble("x").toFloat(), y = o.optDouble("y").toFloat(), w = o.optDouble("w").toFloat(), h = o.optDouble("h").toFloat(),
+            stampId = o.optString("stamp").ifBlank { null }, sigFile = o.optString("file").ifBlank { null },
+            name = o.optString("name"), date = o.optString("date"), rot = o.optDouble("rot", 0.0).toFloat(),
+            signer = o.optString("signer"), profile = o.optInt("profile"),
+        )
+    }
 }
 
 /** Ritar ett fält: signaturen med namn och datum under, fotot eller stämpeln – skalat så att allt får plats. */
@@ -48,7 +72,8 @@ object Composer {
             return Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { contain(Canvas(it), st, RectF(0f, 0f, w.toFloat(), h.toFloat()), false) }
         }
         if (f.type == Field.Type.PHOTO) {
-            val photo = Store.photoFile(ctx).takeIf { it.exists() }?.let { load(it.path) } ?: return null
+            val photo = (f.sigFile?.takeIf { java.io.File(it).exists() } ?: Profile(ctx, 1).photoFile.path.takeIf { java.io.File(it).exists() })
+                ?.let(::load) ?: return null
             val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
             val c = Canvas(out)
             // Fotot fyller fältet med bibehållna proportioner och rundade hörn
@@ -92,6 +117,23 @@ object Composer {
             }
         }
         return out
+    }
+
+    /**
+     * Ritar fältet för export, med vridning. Returnerar bilden och dess ram i sidan (andelar 0–1).
+     * Vid vridning blir ramen den omslutande rektangeln, så att bilden kan läggas in rakt i PDF och Word.
+     */
+    fun render(ctx: Context, f: Field, pageWpt: Float, pageHpt: Float, pxPerPt: Float): Pair<Bitmap, RectF>? {
+        val wPt = f.w * pageWpt; val hPt = f.h * pageHpt
+        val base = compose(ctx, f, (wPt * pxPerPt).toInt(), (hPt * pxPerPt).toInt()) ?: return null
+        val rect = RectF(f.x, f.y, f.x + f.w, f.y + f.h)
+        if (kotlin.math.abs(f.rot) < 0.1f) return base to rect
+        val img = Bitmap.createBitmap(base, 0, 0, base.width, base.height, android.graphics.Matrix().apply { postRotate(f.rot) }, true)
+        val a = Math.toRadians(f.rot.toDouble())
+        val c = kotlin.math.abs(kotlin.math.cos(a)).toFloat(); val s = kotlin.math.abs(kotlin.math.sin(a)).toFloat()
+        val bw = wPt * c + hPt * s; val bh = wPt * s + hPt * c
+        val cx = (f.x + f.w / 2f) * pageWpt; val cy = (f.y + f.h / 2f) * pageHpt
+        return img to RectF((cx - bw / 2f) / pageWpt, (cy - bh / 2f) / pageHpt, (cx + bw / 2f) / pageWpt, (cy + bh / 2f) / pageHpt)
     }
 
     private fun contain(c: Canvas, b: Bitmap, r: RectF, bottom: Boolean) {

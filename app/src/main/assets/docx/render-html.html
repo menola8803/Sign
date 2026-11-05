@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1200">
+<script src="jszip.min.js"></script>
+<script src="html2canvas.min.js"></script>
+<script src="odt.js"></script>
+<style>
+  body { margin: 0; background: #fff; font-family: "Liberation Serif", "Times New Roman", serif; font-size: 16px; color: #000; }
+  #host p, #host h1, #host h2, #host h3, #host h4, #host h5, #host h6 { margin: 0 0 6px; }
+  #host h1 { font-size: 26px; } #host h2 { font-size: 21px; } #host h3 { font-size: 18px; }
+  #host img { max-width: 100%; }
+</style>
+</head>
+<body>
+<div id="host"></div>
+<script>
+// Ritar upp .odt (läses här) eller .doc (HTML från appen) och skickar tillbaka varje sida som JPEG.
+(async () => {
+  try {
+    const mode = Android.mode();
+    let html, layout;
+    if (mode === 'odt') {
+      const bin = atob(Android.docx());
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const r = await SncOdt.odtToHtml(bytes.buffer);
+      html = r.html; layout = r.layout;
+    } else {
+      html = Android.html();
+      layout = JSON.parse(Android.layout());
+    }
+    const host = document.getElementById('host');
+    const pages = SncOdt.paginate(html, layout, host);
+    await Promise.all([...host.querySelectorAll('img')].map(img => img.complete ? 0 : new Promise(r => { img.onload = img.onerror = r; })));
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    for (let i = 0; i < pages.length; i++) {
+      const s = pages[i];
+      const w = s.offsetWidth, h = s.offsetHeight;
+      const scale = Math.min(1600 / w, 2.2);
+      const canvas = await html2canvas(s, { scale, backgroundColor: '#ffffff', logging: false, useCORS: true, windowWidth: 1200 });
+      Android.page(i, pages.length, w, h, 0, canvas.toDataURL('image/jpeg', 0.9).split(',')[1]);
+    }
+    Android.done();
+  } catch (e) {
+    Android.fail(String(e && e.message || e));
+  }
+})();
+</script>
+</body>
+</html>
