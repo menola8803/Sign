@@ -2,19 +2,22 @@
 
 <img src="docs/icon.png" width="128" alt="Sign-ikonen">
 
-Utvecklare: Claes Sundman S.N.C AB · Scandinavian Nexum Consulting AB
+Utvecklare: Claes Sundman · Scandinavian Nexum Consulting AB
 
-Android-app som signerar Word- och PDF-dokument direkt i telefonen, i samma stil och struktur som Trace.
+Android-app som signerar Word-, ODT- och PDF-dokument direkt i telefonen, i samma stil och struktur som Trace.
 
-- **Öppna** en PDF eller ett Word-dokument (.docx), från appen eller via *Öppna med* / *Dela* i andra appar.
-- **Visa var**: tryck på *Signatur*, *Foto* eller *Stämpel* och sedan där på sidan det ska stå. Dra för att flytta, blå punkt ändrar storlek, rött kryss tar bort.
-- **Signera** i liggande läge – skärmen vänds automatiskt. Namn och datum skrivs alltid under signaturen.
-- **Foto** med främre eller bakre kameran (välj i Inställningar). Läggs automatiskt bredvid signaturen och skalas så att det får plats.
-- **Signatur 2** (tillval, av som standard): fota en signatur på papper med valfri kamera eller infoga en bild från Download. Eget namn och datum. Väljs när man trycker på *Signatur* och läggs in direkt.
-- **S.N.C-loggan** placeras i vänstra hörnet på första sidan (kan stängas av). Sigillet för Scandinavian Nexum Consulting AB finns inbyggt, och fler stämplar kan läggas till som bilder.
-- **Spara** som Word (.docx) eller PDF. PDF-filer behåller text och kvalitet. Spara, dela eller skicka till en kontakt.
-- **Kontakter** med namn, e-post och telefon. Välj vem som signerar; namnet skrivs under signaturen.
-- **Utveckling**: hämtar uppdateringar från GitHub och visar vad varje version innebär och vad tidigare versioner innehöll (`changelog.json`).
+- **Hemskärm** med S.N.C-loggan, *Fota dokument* och *Öppna dokument*, senaste sparade dokument, Kontakter och Uppdateringar. Kugghjulet uppe till höger.
+- **Fota dokument**: skanner som hittar kanterna och klarar flera sidor. Blir en PDF.
+- **Öppna dokument** känner själv igen PDF, Word (.docx och .doc) och OpenDocument (.odt), även via *Öppna med* / *Dela*. Lösenordsskyddade PDF:er frågar efter lösenordet.
+- **Visa var**: tryck på *Signatur*, *Foto* eller *Stämpel* och sedan där på sidan det ska stå. Dra för att flytta, hörnet ändrar storlek, krysset tar bort. Stämplar kan vridas med guldhandtaget eller reglaget.
+- **Signatur 1, 2 och 3** har samma upplägg: förhandsvisning med tid, namn och datum på/av, foto bredvid på/av, kamera (främre som standard), vem som signerar och val från Kontakter. Signatur 1 ritas och är alltid på. Signatur 2 är ett tillval som fotas på papper eller hämtas från Download (bakgrunden blir genomskinlig). Signatur 3 är dold.
+- Senaste signatur och foto sparas. Innan de används frågar appen om de ska användas, eller om du vill ta nya. Datumet på dokumentet är alltid dagens.
+- **Spara** i samma format som originalet: PDF → PDF, Word → Word eller PDF, ODT → ODT eller PDF, gamla .doc → PDF.
+- **Sparade dokument** med miniatyr, status (Signerad, 1 av 2 signerade, Inte signerad), filter och stor förhandsvisning. Ofärdiga dokument sparas också.
+- **Dela** till WhatsApp, Gmail, Drive med flera, skicka till en kontakt eller spara i Download.
+- **Stämplar**: S.N.C-loggan i vänstra hörnet (valbar), sigillet för Scandinavian Nexum Consulting AB, Other Seals och egna loggor där bakgrunden tas bort.
+- **Kontakter** A–Ö med sök, snabbknappar, svep för att ta bort med Ångra, flerval och synk åt båda hållen med telefonens kontakter.
+- **Uppdateringar** (Inställningar): utvecklare, version, bygge, sök efter uppdatering och vad som är nytt (`changelog.json`).
 - Engelska är förvalt, svenska väljs i Inställningar. Allt sker i telefonen – inget laddas upp.
 
 ## Installera
@@ -34,7 +37,7 @@ APK installeras ovanpå den förra.
 
 ## Ny version
 
-1. Höj `version.txt` (t.ex. `1.1`).
+1. Höj `version.txt` (t.ex. `1.2`).
 2. Lägg en ny post överst i `changelog.json` med vad versionen innebär och innehåller, på svenska och engelska.
 3. Pusha till `main`. Appen visar uppdateringen och texterna på sidan Utveckling.
 
