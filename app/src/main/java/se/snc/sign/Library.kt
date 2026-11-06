@@ -22,6 +22,17 @@ import java.io.FileOutputStream
  *   meta.json      namn, format, tider, sidstorlekar och fält
  * Dokument som öppnats men inte gjorts klara sparas också, så att man kan fortsätta senare.
  */
+/** Format som ett signerat dokument kan sparas som. */
+enum class OutFormat(val ext: String, val label: String, val mime: String, val images: Boolean) {
+    PDF("pdf", "PDF", "application/pdf", false),
+    DOCX("docx", "Word", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", false),
+    ODT("odt", "ODT", "application/vnd.oasis.opendocument.text", false),
+    PNG("png", "PNG", "image/png", true),
+    JPG("jpg", "JPG", "image/jpeg", true);
+
+    companion object { fun of(ext: String?) = entries.firstOrNull { it.ext == ext?.lowercase() } }
+}
+
 class LibDoc(val dir: File) {
 
     val id: String get() = dir.name
@@ -36,13 +47,26 @@ class LibDoc(val dir: File) {
         set(v) { meta.put("format", v.name) }
     val created get() = meta.optLong("created")
     val updated get() = meta.optLong("updated")
-    val signedExt: String? get() = meta.optString("signedExt").ifBlank { null }
+    /** De format som sparats senast (pdf, docx, odt, png, jpg). Det första är huvudformatet. */
+    val outputs: List<OutFormat>
+        get() {
+            val a = meta.optJSONArray("outputs")
+            val list = if (a != null) (0 until a.length()).mapNotNull { OutFormat.of(a.getString(it)) }
+                else listOfNotNull(OutFormat.of(meta.optString("signedExt")))
+            return list.filter { outputFiles(it).isNotEmpty() }
+        }
+    val signedExt: String? get() = outputs.firstOrNull()?.ext
 
     val source get() = File(dir, "source." + format.ext)
     val pagesDir get() = File(dir, "pages").apply { mkdirs() }
     val assetsDir get() = File(dir, "assets").apply { mkdirs() }
     val thumb get() = File(dir, "thumb.jpg")
-    val signedFile: File? get() = signedExt?.let { File(dir, "signed.$it") }?.takeIf { it.exists() }
+    val signedFile: File? get() = outputs.firstOrNull()?.let { outputFiles(it).firstOrNull() }
+
+    /** Filerna för ett sparat format: en fil, eller en bild per sida för PNG/JPG. */
+    fun outputFiles(f: OutFormat): List<File> =
+        if (f.images) (File(dir, "signed-${f.ext}").listFiles()?.filter { it.isFile }?.sortedBy { it.name } ?: emptyList())
+        else listOfNotNull(File(dir, "signed.${f.ext}").takeIf { it.exists() })
 
     fun pageFile(i: Int) = File(pagesDir, "page-%03d.jpg".format(i))
 
@@ -74,6 +98,10 @@ class LibDoc(val dir: File) {
             signDone == signTotal -> Status.SIGNED
             else -> Status.PARTLY
         }
+    /** Numren (1, 2, 3 …) på signaturfälten som är signerade, i fältens ordning. */
+    val signedNumbers: List<Int> get() = fields.filter { it.type == Field.Type.SIGN }.withIndex().filter { it.value.done }.map { it.index + 1 }
+    val waitingNumbers: List<Int> get() = fields.filter { it.type == Field.Type.SIGN }.withIndex().filter { !it.value.done }.map { it.index + 1 }
+
     /** Namnen på de som har signerat, och de som saknas. */
     val signedBy get() = fields.filter { it.type == Field.Type.SIGN && it.done }.map { it.name.ifBlank { it.signer } }.filter { it.isNotBlank() }.distinct()
     val waitingFor get() = fields.filter { it.type == Field.Type.SIGN && !it.done }.map { it.signer }.filter { it.isNotBlank() }.distinct()
@@ -84,11 +112,27 @@ class LibDoc(val dir: File) {
         metaFile.writeText(meta.toString())
     }
 
-    fun setSigned(file: File, ext: String) {
-        dir.listFiles()?.filter { it.name.startsWith("signed.") }?.forEach { it.delete() }
-        file.copyTo(File(dir, "signed.$ext"), overwrite = true)
-        meta.put("signedExt", ext)
+    /** Tar bort tidigare sparade format innan en ny sparning. */
+    fun clearSigned() {
+        dir.listFiles()?.filter { it.name.startsWith("signed") }?.forEach { it.deleteRecursively() }
+        meta.remove("signedExt"); meta.put("outputs", org.json.JSONArray())
+    }
+
+    /** Lägger till ett sparat format. För bilder är [files] en fil per sida. */
+    fun addSigned(f: OutFormat, files: List<File>) {
+        if (f.images) {
+            val d = File(dir, "signed-${f.ext}").apply { deleteRecursively(); mkdirs() }
+            files.forEachIndexed { i, src -> src.copyTo(File(d, "page-%02d.${f.ext}".format(i + 1)), overwrite = true) }
+        } else files.firstOrNull()?.copyTo(File(dir, "signed.${f.ext}"), overwrite = true)
+        val a = meta.optJSONArray("outputs") ?: org.json.JSONArray()
+        if ((0 until a.length()).none { a.getString(it) == f.ext }) a.put(f.ext)
+        meta.put("outputs", a)
         save()
+    }
+
+    fun setSigned(file: File, ext: String) {
+        clearSigned()
+        OutFormat.of(ext)?.let { addSigned(it, listOf(file)) }
     }
 
     /** Kopierar en signatur eller ett foto in i dokumentets mapp; returnerar sökvägen till kopian. */

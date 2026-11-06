@@ -142,35 +142,82 @@ object ShareSheet {
         "com.microsoft.skydrive", "com.dropbox.android", "com.microsoft.teams", "com.Slack",
     )
 
-    fun fileOf(doc: LibDoc): Pair<File, String> {
-        val f = doc.signedFile ?: doc.source
-        val ext = f.extension.lowercase()
-        val mime = DocFormat.entries.firstOrNull { it.ext == ext }?.mime ?: "application/pdf"
-        return f to mime
+    /** Det som delas: en eller flera filer (t.ex. en bild per sida) och deras typ. */
+    class Pick(val files: List<File>, val mime: String, val label: String)
+
+    /** Filerna för ett format; utan sparat format delas originalet. */
+    fun pick(doc: LibDoc, f: OutFormat?): Pick {
+        if (f != null) {
+            val files = doc.outputFiles(f)
+            if (files.isNotEmpty()) return Pick(files, f.mime, f.label)
+        }
+        val src = doc.source
+        val mime = DocFormat.entries.firstOrNull { it.ext == src.extension.lowercase() }?.mime ?: "application/pdf"
+        return Pick(listOf(src), mime, doc.format.label)
     }
 
-    private fun shareName(doc: LibDoc, f: File): String {
-        val suffix = if (doc.signedFile != null) "-signed" else ""
+    /** Alla sparade format på en gång. */
+    fun pickAll(doc: LibDoc): Pick {
+        val outs = doc.outputs
+        return Pick(outs.flatMap { doc.outputFiles(it) }, if (outs.size == 1) outs[0].mime else "*/*", "")
+    }
+
+    private fun shareName(doc: LibDoc, f: File, index: Int, count: Int): String {
+        val signed = f.name.startsWith("signed") || f.parentFile?.name?.startsWith("signed") == true
+        val suffix = (if (signed) "-signed" else "") + (if (count > 1 && f.parentFile?.name?.startsWith("signed-") == true) "-page%02d".format(index + 1) else "")
         return doc.name + suffix + "." + f.extension
     }
 
-    /** Filen kopieras med ett läsbart namn så att mottagaren ser rätt filnamn. */
-    fun shareUri(activity: Activity, doc: LibDoc): Pair<Uri, String> {
-        val (f, mime) = fileOf(doc)
+    /** Filerna kopieras med läsbara namn så att mottagaren ser rätt filnamn. */
+    fun shareUris(activity: Activity, doc: LibDoc, p: Pick): ArrayList<Uri> {
         val dir = File(activity.cacheDir, "out").apply { deleteRecursively(); mkdirs() }
-        val copy = File(dir, shareName(doc, f).replace(Regex("[\\\\/:*?\"<>|]"), "_"))
-        f.copyTo(copy, overwrite = true)
-        return FileProvider.getUriForFile(activity, "${activity.packageName}.files", copy) to mime
+        val out = ArrayList<Uri>()
+        p.files.forEachIndexed { i, f ->
+            val copy = File(dir, shareName(doc, f, i, p.files.size).replace(Regex("[\\\\/:*?\"<>|]"), "_"))
+            f.copyTo(copy, overwrite = true)
+            out += FileProvider.getUriForFile(activity, "${activity.packageName}.files", copy)
+        }
+        return out
     }
 
+    /** En fil (bakåtkompatibelt): huvudformatet eller originalet. */
+    fun shareUri(activity: Activity, doc: LibDoc): Pair<Uri, String> {
+        val p = pick(doc, doc.outputs.firstOrNull())
+        return shareUris(activity, doc, Pick(p.files.take(1), p.mime, p.label))[0] to p.mime
+    }
+
+    /** Finns flera sparade format frågar appen först vilket som ska delas. */
     fun show(activity: Activity, doc: LibDoc, onDeleted: (() -> Unit)? = null) {
-        val (uri, mime) = shareUri(activity, doc)
-        val send = Intent(Intent.ACTION_SEND).apply {
+        val outs = doc.outputs
+        if (outs.size <= 1) { showFor(activity, doc, pick(doc, outs.firstOrNull()), onDeleted); return }
+        val s = Sheet(activity).title(activity.getString(R.string.share_which_format), doc.name)
+        for (f in outs) {
+            val files = doc.outputFiles(f)
+            val sub = if (f.images) activity.tr(R.string.n_images, files.size) else activity.getString(formatSub(f))
+            s.row(f.label.take(4), activity.tr(R.string.share_as, f.label), sub) { showFor(activity, doc, pick(doc, f), onDeleted) }
+        }
+        s.row("⧉", activity.getString(R.string.share_all_formats), outs.joinToString(" + ") { it.label }) { showFor(activity, doc, pickAll(doc), onDeleted) }
+        s.show()
+    }
+
+    private fun formatSub(f: OutFormat) = when (f) {
+        OutFormat.PDF -> R.string.format_pdf_sub
+        OutFormat.DOCX -> R.string.format_docx_sub
+        OutFormat.ODT -> R.string.format_odt_sub
+        else -> R.string.format_image_sub
+    }
+
+    private fun sendIntent(activity: Activity, doc: LibDoc, uris: ArrayList<Uri>, mime: String) =
+        (if (uris.size == 1) Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_STREAM, uris[0])
+        else Intent(Intent.ACTION_SEND_MULTIPLE).putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)).apply {
             type = mime
-            putExtra(Intent.EXTRA_STREAM, uri)
             putExtra(Intent.EXTRA_SUBJECT, activity.tr(R.string.mail_subject, doc.name))
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
+
+    private fun showFor(activity: Activity, doc: LibDoc, p: Pick, onDeleted: (() -> Unit)?) {
+        val uris = shareUris(activity, doc, p)
+        val send = sendIntent(activity, doc, uris, p.mime)
         val pm = activity.packageManager
         val targets = pm.queryIntentActivities(send, 0)
             .filter { it.activityInfo.packageName in PREFERRED }
@@ -187,7 +234,7 @@ object ShareSheet {
             addView(LinearLayout(activity).apply {
                 orientation = LinearLayout.VERTICAL; setPadding((12 * d).toInt(), 0, 0, 0)
                 addView(TextView(activity).apply {
-                    text = doc.name; textSize = 15f; setTextColor(ContextCompat.getColor(activity, R.color.ink))
+                    text = doc.name + if (p.label.isNotBlank()) " · " + p.label else ""; textSize = 15f; setTextColor(ContextCompat.getColor(activity, R.color.ink))
                     typeface = ResourcesCompat.getFont(activity, R.font.jakarta_bold); maxLines = 1; ellipsize = TextUtils.TruncateAt.END
                 })
                 addView(StatusChip.make(activity, doc))
@@ -206,12 +253,12 @@ object ShareSheet {
         }
         sheet.row("📄", activity.getString(R.string.open_doc)) {
             try {
-                activity.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
+                activity.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uris[0], if (p.mime == "*/*") null else p.mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
             } catch (e: ActivityNotFoundException) {
                 Toast.makeText(activity, R.string.no_viewer_app, Toast.LENGTH_LONG).show()
             }
         }
-        sheet.row("⤓", activity.getString(R.string.save_to_downloads)) { saveToDownloads(activity, doc) }
+        sheet.row("⤓", activity.getString(R.string.save_to_downloads)) { saveToDownloads(activity, doc, p) }
         if (onDeleted != null) sheet.row("🗑", activity.getString(R.string.delete), danger = true) { confirmDelete(activity, doc, onDeleted) }
         sheet.show()
     }
@@ -246,33 +293,68 @@ object ShareSheet {
         s.show()
     }
 
-    /** Sparar filen i mappen Download (Hämtade filer). */
-    fun saveToDownloads(activity: Activity, doc: LibDoc) {
-        val (f, mime) = fileOf(doc)
-        val values = ContentValues().apply {
-            put(MediaStore.Downloads.DISPLAY_NAME, shareName(doc, f))
-            put(MediaStore.Downloads.MIME_TYPE, mime)
+    /** Sparar filerna i mappen Download (Hämtade filer). */
+    fun saveToDownloads(activity: Activity, doc: LibDoc, p: Pick = pick(doc, doc.outputs.firstOrNull())) {
+        val ok = p.files.withIndex().all { (i, f) ->
+            val mime = when (f.extension.lowercase()) { "png" -> "image/png"; "jpg", "jpeg" -> "image/jpeg"; else -> OutFormat.of(f.extension)?.mime ?: p.mime }
+            val values = ContentValues().apply {
+                put(MediaStore.Downloads.DISPLAY_NAME, shareName(doc, f, i, p.files.size))
+                put(MediaStore.Downloads.MIME_TYPE, mime)
+            }
+            runCatching {
+                val uri = activity.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: error("insert")
+                activity.contentResolver.openOutputStream(uri)?.use { o -> f.inputStream().use { it.copyTo(o) } }
+            }.isSuccess
         }
-        val ok = runCatching {
-            val uri = activity.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: error("insert")
-            activity.contentResolver.openOutputStream(uri)?.use { o -> f.inputStream().use { it.copyTo(o) } }
-        }.isSuccess
         Toast.makeText(activity, if (ok) R.string.saved_downloads else R.string.export_failed, Toast.LENGTH_LONG).show()
     }
 }
 
-/** Liten etikett med dokumentets status: Signerad / 1 av 2 signerade / Inte signerad. */
+/**
+ * Liten etikett i hörnet med dokumentets status:
+ * grön "Sign 1 2" = signaturfält 1 och 2 är signerade (bara siffror, i fältens ordning),
+ * röd "Unsigned" = inget fält är signerat än.
+ */
 object StatusChip {
     fun make(activity: Activity, doc: LibDoc): TextView = TextView(activity).apply {
         val d = activity.resources.displayMetrics.density
         textSize = 11f
         typeface = ResourcesCompat.getFont(activity, R.font.jakarta_bold)
         setPadding((7 * d).toInt(), (2 * d).toInt(), (7 * d).toInt(), (2 * d).toInt())
-        when (doc.status) {
-            LibDoc.Status.SIGNED -> { setText(R.string.status_signed); setTextColor(ContextCompat.getColor(activity, R.color.mint)); setBackgroundResource(R.drawable.bg_chip_ok) }
-            LibDoc.Status.PARTLY -> { text = activity.tr(R.string.status_partly, doc.signDone, doc.signTotal); setTextColor(ContextCompat.getColor(activity, R.color.gold)); setBackgroundResource(R.drawable.bg_chip_part) }
-            LibDoc.Status.NOT_SIGNED -> { setText(R.string.status_not_signed); setTextColor(ContextCompat.getColor(activity, R.color.danger)); setBackgroundResource(R.drawable.bg_chip_no) }
+        val nums = doc.signedNumbers
+        if (nums.isEmpty()) {
+            setText(R.string.status_unsigned); setTextColor(ContextCompat.getColor(activity, R.color.danger)); setBackgroundResource(R.drawable.bg_chip_no)
+        } else {
+            text = activity.getString(R.string.status_sign) + " " + nums.joinToString(" ")
+            setTextColor(ContextCompat.getColor(activity, R.color.mint)); setBackgroundResource(R.drawable.bg_chip_ok)
         }
+        contentDescription = if (nums.isEmpty()) activity.getString(R.string.status_unsigned)
+            else activity.tr(R.string.status_fields_signed, nums.joinToString(", "))
         layoutParams = LinearLayout.LayoutParams(-2, -2).apply { topMargin = (4 * d).toInt() }
+    }
+
+    /** Förklaringen av märkena (ⓘ vid Sparade dokument). */
+    fun explain(activity: Activity) {
+        val d = activity.resources.displayMetrics.density
+        fun example(label: String, ok: Boolean, text: String) = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, (6 * d).toInt(), 0, (6 * d).toInt())
+            addView(TextView(activity).apply {
+                this.text = label; textSize = 11f; typeface = ResourcesCompat.getFont(activity, R.font.jakarta_bold)
+                setPadding((7 * d).toInt(), (2 * d).toInt(), (7 * d).toInt(), (2 * d).toInt())
+                setTextColor(ContextCompat.getColor(activity, if (ok) R.color.mint else R.color.danger))
+                setBackgroundResource(if (ok) R.drawable.bg_chip_ok else R.drawable.bg_chip_no)
+            })
+            addView(TextView(activity).apply {
+                this.text = text; textSize = 13f; setTextColor(ContextCompat.getColor(activity, R.color.muted)); setPadding((12 * d).toInt(), 0, 0, 0)
+            }, LinearLayout.LayoutParams(0, -2, 1f))
+        }
+        Sheet(activity).title(activity.getString(R.string.status_help_title))
+            .view(example(activity.getString(R.string.status_sign) + " 1 2", true, activity.getString(R.string.status_help_sign)), 8)
+            .view(example(activity.getString(R.string.status_unsigned), false, activity.getString(R.string.status_help_unsigned)), 4)
+            .view(TextView(activity).apply {
+                setText(R.string.status_help_more); textSize = 13f; setTextColor(ContextCompat.getColor(activity, R.color.dim))
+            }, 8)
+            .buttons(null, activity.getString(R.string.done), {})
+            .show()
     }
 }

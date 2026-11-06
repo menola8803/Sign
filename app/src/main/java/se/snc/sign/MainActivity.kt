@@ -78,7 +78,14 @@ class MainActivity : BaseActivity() {
         // Sparade dokument
         val savedHead = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
         savedTitle = Kit.section(c, getString(R.string.saved_documents))
-        savedHead.addView(savedTitle, LinearLayout.LayoutParams(0, -2, 1f))
+        savedHead.addView(savedTitle, LinearLayout.LayoutParams(-2, -2))
+        // ⓘ förklarar märkena "Sign 1 2" och "Unsigned"
+        savedHead.addView(Kit.text(c, "ⓘ", 16f, R.color.gold, isBold = true).apply {
+            setPadding(dp(8), dp(20), dp(8), dp(4)); setBackgroundResource(R.drawable.bg_row)
+            contentDescription = getString(R.string.status_help_title)
+            setOnClickListener { StatusChip.explain(c) }
+        })
+        savedHead.addView(View(c), LinearLayout.LayoutParams(0, 1, 1f))
         savedHead.addView(Kit.text(c, getString(R.string.see_all) + "  ›", 13f, R.color.gold, isBold = true).apply {
             setPadding(dp(8), dp(22), dp(4), dp(6)); setBackgroundResource(R.drawable.bg_row)
             setOnClickListener { startActivity(Intent(c, LibraryActivity::class.java)) }
@@ -98,13 +105,9 @@ class MainActivity : BaseActivity() {
         screen.add(Kit.text(c, tr(R.string.footer_line, UpdateChecker.featureVersion(UpdateChecker.currentVersionName(c))), 12.5f, R.color.dim).apply {
             gravity = Gravity.CENTER; setPadding(0, dp(24), 0, dp(2))
         })
-        updateLine = Kit.text(c, "", 12.5f, R.color.gold, isBold = true).apply {
+        // Bara information: kunden uppdaterar i Inställningar → Uppdateringar
+        updateLine = Kit.text(c, getString(R.string.new_updates_line), 12.5f, R.color.gold, isBold = true).apply {
             gravity = Gravity.CENTER; setPadding(0, dp(4), 0, dp(8)); visibility = View.GONE
-            setBackgroundResource(R.drawable.bg_row)
-            setOnClickListener {
-                val url = Prefs.knownLatestUrl(c)
-                if (url.isNotBlank()) UpdateChecker.open(c, url) else startActivity(Intent(c, SettingsActivity::class.java))
-            }
         }
         screen.add(updateLine)
 
@@ -190,8 +193,12 @@ class MainActivity : BaseActivity() {
     private fun showUpdate() {
         val newer = Prefs.knownLatestBuild(this) > UpdateChecker.currentBuild(this)
         updateDot.visibility = if (newer) View.VISIBLE else View.GONE
-        updateLine.visibility = if (newer) View.VISIBLE else View.GONE
-        if (newer) updateLine.text = tr(R.string.new_version_available, UpdateChecker.featureVersion(Prefs.knownLatestName(this)), Prefs.knownLatestName(this))
+        if (newer && updateLine.visibility != View.VISIBLE) {
+            // Tonar in mjukt
+            updateLine.alpha = 0f; updateLine.translationY = 10 * resources.displayMetrics.density
+            updateLine.visibility = View.VISIBLE
+            updateLine.animate().alpha(1f).translationY(0f).setStartDelay(350).setDuration(600).start()
+        } else if (!newer) updateLine.visibility = View.GONE
     }
 
     /** Söker efter ny version högst en gång per dygn, om det är påslaget i inställningarna. */

@@ -92,6 +92,7 @@
         <activity android:name=".ContactActivity" android:exported="false" />
         <activity android:name=".LibraryActivity" android:exported="false" />
         <activity android:name=".DocPreviewActivity" android:exported="false" />
+        <activity android:name=".ManualActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ImportLogoActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
 
         <provider

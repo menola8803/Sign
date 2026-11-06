@@ -124,18 +124,6 @@
                     android:orientation="vertical" />
             </LinearLayout>
 
-            <!-- Om appen -->
-            <TextView style="@style/Sign.Section" android:text="@string/about_section" />
-            <LinearLayout style="@style/Sign.Card">
-                <TextView style="@style/Sign.AboutTitle" android:text="@string/about_docs_title" />
-                <TextView style="@style/Sign.AboutBody" android:text="@string/about_docs_body" />
-                <TextView style="@style/Sign.AboutTitle" android:layout_marginTop="14dp" android:text="@string/about_sign_title" />
-                <TextView style="@style/Sign.AboutBody" android:text="@string/about_sign_body" />
-                <TextView style="@style/Sign.AboutTitle" android:layout_marginTop="14dp" android:text="@string/about_photo_title" />
-                <TextView style="@style/Sign.AboutBody" android:text="@string/about_photo_body" />
-                <TextView style="@style/Sign.AboutTitle" android:layout_marginTop="14dp" android:text="@string/about_seal_title" />
-                <TextView style="@style/Sign.AboutBody" android:text="@string/about_seal_body" />
-            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"

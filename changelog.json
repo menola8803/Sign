@@ -4,6 +4,69 @@
   "note": "Versionshistorik på svenska och engelska. Appen och webbversionen läser den här filen. Lägg nya versioner överst och höj version.txt.",
   "releases": [
     {
+      "version": "1.4",
+      "date": "2026-11-06",
+      "title": {
+        "sv": "Spara i fler format, tydligare status och manual",
+        "en": "Save in more formats, clearer status and a manual"
+      },
+      "summary": {
+        "sv": "Alla dokument kan nu sparas som PDF, Word, ODT eller en bild per sida – flera format på en gång. Gamla .doc kan bli en riktig Word-fil med redigerbar text. Sparade dokument visar grönt Sign 1 2 för de signerade fälten eller rött Osignerad. En manual finns under Inställningar.",
+        "en": "Every document can now be saved as PDF, Word, ODT or one image per page – several formats at once. Old .doc files can become a real Word file with editable text. Saved documents show green Sign 1 2 for the signed fields or red Unsigned. A manual is available under Settings."
+      },
+      "changes": [
+        {
+          "type": "new",
+          "text": {
+            "sv": "Spara som PDF, Word (.docx), ODT, PNG eller JPG – välj ett eller flera format. Formaten är tydliga knappar och en stor guldknapp sparar.",
+            "en": "Save as PDF, Word (.docx), ODT, PNG or JPG – choose one or more formats. The formats are clear buttons and a big gold button saves."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Gamla .doc kan sparas som riktig Word-fil med redigerbar text, med signaturerna på rätt sida.",
+            "en": "Old .doc files can be saved as a real Word file with editable text, with the signatures on the right page."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Dela frågar vilket format som ska delas när flera är sparade, eller alla på en gång.",
+            "en": "Share asks which format to share when several are saved, or all at once."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Sparade dokument: grönt Sign 1 2 visar vilka signaturfält som är signerade, rött Osignerad när inget är signerat. ⓘ förklarar märkena.",
+            "en": "Saved documents: green Sign 1 2 shows which signature fields are signed, red Unsigned when none is. ⓘ explains the labels."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Manual under Inställningar, med kapitel och sökning.",
+            "en": "Manual under Settings, with chapters and search."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Startsidan visar Sign v1.4 och Nya uppdateringar när en ny version finns. Uppdatering görs i Inställningar.",
+            "en": "The home screen shows Sign v1.4 and New updates when a new version exists. Updating is done in Settings."
+          }
+        },
+        {
+          "type": "fixed",
+          "text": {
+            "sv": "Knapparna Fota på papper och Från fil ligger på samma höjd.",
+            "en": "The Photograph on paper and From file buttons are aligned."
+          }
+        }
+      ]
+    },
+    {
       "version": "1.3",
       "date": "2026-11-06",
       "title": {

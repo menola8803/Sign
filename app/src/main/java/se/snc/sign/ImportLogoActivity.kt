@@ -85,7 +85,7 @@ class ImportLogoActivity : BaseActivity() {
         val scroll = ScrollView(c).apply { addView(panel); setBackgroundResource(R.drawable.bg_sheet) }
         col.addView(scroll, LinearLayout.LayoutParams(-1, (resources.displayMetrics.heightPixels * 0.42f).toInt()))
 
-        val tools = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL }
+        val tools = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL; isBaselineAligned = false }
         for ((t, label) in listOf(
             LogoCanvas.Tool.CROP to "⌗  " + getString(R.string.tool_crop),
             LogoCanvas.Tool.ERASE to "⌫  " + getString(R.string.tool_erase),

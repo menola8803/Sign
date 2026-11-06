@@ -12,8 +12,9 @@ Android-app som signerar Word-, ODT- och PDF-dokument direkt i telefonen, i samm
 - **Visa var**: tryck på *Signatur*, *Foto* eller *Stämpel* och sedan där på sidan det ska stå. Dra för att flytta, hörnet ändrar storlek, krysset tar bort. Stämplar kan vridas med guldhandtaget eller reglaget.
 - **Signatur 1, 2 och 3** har samma upplägg: förhandsvisning med tid, namn och datum på/av, foto bredvid på/av, kamera (främre som standard), vem som signerar och val från Kontakter. Signatur 1 ritas och är alltid på. Signatur 2 är ett tillval som fotas på papper eller hämtas från Download (bakgrunden blir genomskinlig). Signatur 3 är dold.
 - Senaste signatur och foto sparas. Innan de används frågar appen om de ska användas, eller om du vill ta nya. Datumet på dokumentet är alltid dagens.
-- **Spara** i samma format som originalet: PDF → PDF, Word → Word eller PDF, ODT → ODT eller PDF, gamla .doc → PDF.
-- **Sparade dokument** med miniatyr, status (Signerad, 1 av 2 signerade, Inte signerad), filter och stor förhandsvisning. Ofärdiga dokument sparas också.
+- **Spara som** PDF, Word (.docx), ODT eller en bild per sida (PNG/JPG), ett eller flera format på en gång. PDF till Word/ODT lägger in sidorna som bilder; gamla .doc kan bli en riktig Word-fil med redigerbar text.
+- **Manual** under Inställningar med kapitel och sökning.
+- **Sparade dokument**: grönt *Sign 1 2* = signaturfält 1 och 2 är signerade, rött *Unsigned/Osignerad* = inget fält är signerat än. Med miniatyr, status (Signerad, 1 av 2 signerade, Inte signerad), filter och stor förhandsvisning. Ofärdiga dokument sparas också.
 - **Dela** till WhatsApp, Gmail, Drive med flera, skicka till en kontakt eller spara i Download.
 - **Stämplar**: S.N.C-loggan i vänstra hörnet (valbar), sigillet för Scandinavian Nexum Consulting AB, Other Seals och egna loggor där bakgrunden tas bort.
 - **Kontakter** A–Ö med sök, snabbknappar, svep för att ta bort med Ångra, flerval och synk åt båda hållen med telefonens kontakter.
@@ -42,7 +43,8 @@ APK installeras ovanpå den förra.
 
 ## Ny version
 
-1. Höj `version.txt` (t.ex. `1.3`).
+1. Höj `version.txt` (t.ex. `1.4`).
+1. Uppdatera manualen i appen (strängarna `manual_*` på svenska och engelska) med det som är nytt.
 2. Lägg en ny post överst i `changelog.json` med vad versionen innebär och innehåller, på svenska och engelska.
 3. Pusha till `main`. Appen visar uppdateringen och texterna på sidan Utveckling.
 

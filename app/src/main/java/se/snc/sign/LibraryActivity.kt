@@ -29,6 +29,10 @@ class LibraryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         val c = this
         val screen = Screen(this, getString(R.string.saved_documents))
+        // ⓘ förklarar märkena "Sign 1 2" och "Unsigned"
+        screen.add(Kit.text(c, "ⓘ  " + getString(R.string.status_help_link), 13f, R.color.gold, isBold = true).apply {
+            setPadding(0, 6, 0, 6); setBackgroundResource(R.drawable.bg_row); setOnClickListener { StatusChip.explain(c) }
+        }, 2)
         screen.add(Kit.segmented(c, listOf(getString(R.string.filter_all), getString(R.string.status_signed_short),
             getString(R.string.status_partly_short), getString(R.string.status_not_short)), filter) { filter = it; render() }, 8)
         grid = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL }
@@ -54,7 +58,7 @@ class LibraryActivity : BaseActivity() {
             return
         }
         docs.chunked(2).forEach { pair ->
-            val row = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL }
+            val row = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL; isBaselineAligned = false }
             pair.forEachIndexed { i, d ->
                 row.addView(DocCard.make(this, d) { openDoc(d) },
                     LinearLayout.LayoutParams(0, -2, 1f).apply { if (i > 0) marginStart = dp(10) })
@@ -147,10 +151,17 @@ class DocPreviewActivity : BaseActivity() {
         })
         screen.add(pager.apply { layoutParams = LinearLayout.LayoutParams(-1, h) }, 8)
 
+        // I klartext: "Fält 1 och 2 signerade av … · Väntar på fält 3"
+        val nums = d.signedNumbers
+        val waitNums = d.waitingNumbers
         val signed = d.signedBy
-        val waiting = d.waitingFor
-        if (signed.isNotEmpty()) screen.add(Kit.text(c, "✓ " + tr(R.string.signed_by, signed.joinToString(", ")), 13.5f, R.color.mint), 10)
-        if (waiting.isNotEmpty()) screen.add(Kit.text(c, "⏳ " + tr(R.string.waiting_for, waiting.joinToString(", ")), 13.5f, R.color.danger), 4)
+        if (nums.isNotEmpty()) screen.add(Kit.text(c, "✓ " + (if (nums.size == 1) tr(R.string.field_signed, joinNums(nums)) else tr(R.string.fields_signed, joinNums(nums))) +
+            (if (signed.isNotEmpty()) " " + tr(R.string.by_names, signed.joinToString(", ")) else ""), 13.5f, R.color.mint), 10)
+        if (waitNums.isNotEmpty()) {
+            val who = d.waitingFor
+            screen.add(Kit.text(c, "⏳ " + (if (waitNums.size == 1) tr(R.string.waiting_for_field, joinNums(waitNums)) else tr(R.string.waiting_for_fields, joinNums(waitNums))) + if (who.isNotEmpty()) " · " + who.joinToString(", ") else "", 13.5f, R.color.danger), 4)
+        }
+        if (nums.isEmpty() && waitNums.isEmpty()) screen.add(Kit.text(c, getString(R.string.no_signature_fields), 13.5f, R.color.dim), 10)
         screen.add(Kit.text(c, d.format.label + " · " + tr(R.string.updated_at, Profile.stamp(c, d.updated)), 12.5f, R.color.dim), 4)
 
         screen.add(Kit.button(c, getString(if (d.status == LibDoc.Status.SIGNED) R.string.open_and_edit else R.string.continue_signing), primary = true) {
@@ -162,6 +173,10 @@ class DocPreviewActivity : BaseActivity() {
             Kit.button(c, getString(R.string.delete), danger = true) { ShareSheet.confirmDelete(c, d) { finish() } }), 8)
         screen.show()
     }
+
+    /** "1", "1 och 2", "1, 2 och 3" */
+    private fun joinNums(n: List<Int>): String =
+        if (n.size == 1) n[0].toString() else n.dropLast(1).joinToString(", ") + " " + getString(R.string.and_word) + " " + n.last()
 
     /** Byt namn på dokumentet. */
     private fun renameDoc() {

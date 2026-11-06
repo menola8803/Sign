@@ -111,7 +111,9 @@ object Kit {
     /** Flera knappar bredvid varandra med samma bredd. */
     fun buttonRow(c: Context, vararg buttons: View) = LinearLayout(c).apply {
         orientation = LinearLayout.HORIZONTAL
-        buttons.forEachIndexed { i, b -> addView(b, LinearLayout.LayoutParams(0, -2, 1f).apply { if (i > 0) marginStart = dp(c, 8) }) }
+        // Lika höga knappar på samma linje, även om texten i en av dem bryts på två rader
+        isBaselineAligned = false
+        buttons.forEachIndexed { i, b -> addView(b, LinearLayout.LayoutParams(0, -1, 1f).apply { if (i > 0) marginStart = dp(c, 8) }) }
     }
 
     /** En klickbar rad med ikon, rubrik och undertext. */
@@ -161,7 +163,7 @@ object Kit {
 
     /** Två val bredvid varandra (t.ex. Fram/Bak). */
     fun segmented(c: Context, options: List<String>, selected: Int, onSelect: (Int) -> Unit): LinearLayout {
-        val row = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL }
+        val row = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL; isBaselineAligned = false }
         val views = ArrayList<TextView>()
         fun paint(sel: Int) = views.forEachIndexed { i, v ->
             v.setBackgroundResource(if (i == sel) R.drawable.bg_button_primary else R.drawable.bg_button_outline)
@@ -173,7 +175,7 @@ object Kit {
                 setOnClickListener { paint(i); onSelect(i) }
             }
             views += v
-            row.addView(v, LinearLayout.LayoutParams(0, -2, 1f).apply { if (i > 0) marginStart = dp(c, 8) })
+            row.addView(v, LinearLayout.LayoutParams(0, -1, 1f).apply { if (i > 0) marginStart = dp(c, 8) })
         }
         paint(selected)
         return row

@@ -10,6 +10,7 @@ import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.text.InputType
 import android.util.LruCache
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
@@ -451,7 +452,7 @@ class DocumentActivity : BaseActivity(), PageView.Host {
         val useLabel = if (p.showPhoto && p.hasPhoto) R.string.use_sig_and_photo else R.string.use_signature
         s.view(s.button(getString(useLabel), true) { handled = true; s.dialog.dismiss(); fill(f, p, p.showPhoto) }
             .apply { layoutParams = LinearLayout.LayoutParams(-1, (48 * dd).toInt()) }, 14)
-        val row1 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        val row1 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; isBaselineAligned = false }
         row1.addView(s.button(getString(R.string.edit_signature), false) {
             handled = true; s.dialog.dismiss(); newSignature(f, p, p.showPhoto)
         }, LinearLayout.LayoutParams(0, (44 * dd).toInt(), 1f).apply { marginEnd = (8 * dd).toInt() })
@@ -461,7 +462,7 @@ class DocumentActivity : BaseActivity(), PageView.Host {
             cameraLauncher.launch(Intent(this, CameraActivity::class.java).putExtra(CameraActivity.EXTRA_PROFILE, p.n))
         }, LinearLayout.LayoutParams(0, (44 * dd).toInt(), 1f))
         s.view(row1, 8)
-        val row2 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        val row2 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; isBaselineAligned = false }
         row2.addView(s.button(getString(R.string.without_photo), false) { handled = true; s.dialog.dismiss(); fill(f, p, false) },
             LinearLayout.LayoutParams(0, (44 * dd).toInt(), 1f).apply { marginEnd = (8 * dd).toInt() })
         row2.addView(s.button(getString(R.string.cancel), false) { s.dialog.dismiss() }, LinearLayout.LayoutParams(0, (44 * dd).toInt(), 1f))
@@ -722,37 +723,81 @@ class DocumentActivity : BaseActivity(), PageView.Host {
     }
 
     /**
-     * Spara som: namn (förifyllt), "Spara som ny kopia" och format. Samma format som originalet står först.
-     * Gamla .doc kan bara sparas som PDF.
+     * Spara som: namn (förifyllt), "Spara som ny kopia" och ett eller flera format som tydliga knappar
+     * (tryck för att välja, guldram + bock = valt). Samma format som originalet är förvalt.
+     * Den stora guldknappen sparar: "Spara som PDF" eller "Spara (2 format)".
      */
     private fun chooseFormat(d: LibDoc) {
-        val options = when (d.format) {
-            DocFormat.DOCX -> listOf(DocFormat.DOCX, DocFormat.PDF)
-            DocFormat.ODT -> listOf(DocFormat.ODT, DocFormat.PDF)
-            else -> listOf(DocFormat.PDF)
-        }
+        val dd = resources.displayMetrics.density
         val s = Sheet(this).title(getString(R.string.save_as_title), tr(R.string.original_name, d.name + "." + d.format.ext))
         val nameInput = Kit.input(this, getString(R.string.doc_name), d.name, android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
         s.view(Kit.text(this, getString(R.string.doc_name), 12.5f, R.color.dim), 8)
         s.view(nameInput, 4)
         var asCopy = d.signedFile != null
         s.view(Kit.switch(this, getString(R.string.save_as_copy), asCopy, getString(R.string.save_as_copy_sub)) { asCopy = it }, 6)
-        s.view(Kit.text(this, getString(R.string.choose_format), 12.5f, R.color.dim), 12)
-        for (f in options) {
-            val (title, sub) = when (f) {
-                DocFormat.DOCX -> R.string.format_docx to R.string.format_docx_sub
-                DocFormat.ODT -> R.string.format_odt to R.string.format_odt_sub
-                else -> R.string.format_pdf to R.string.format_pdf_sub
+        s.view(Kit.text(this, getString(R.string.choose_formats), 12.5f, R.color.dim), 12)
+
+        val selected = LinkedHashSet<OutFormat>()
+        selected += when (d.format) { DocFormat.DOCX, DocFormat.DOC -> OutFormat.DOCX; DocFormat.ODT -> OutFormat.ODT; else -> OutFormat.PDF }
+        lateinit var saveBtn: TextView
+        val cards = HashMap<OutFormat, View>()
+        fun paint() {
+            cards.forEach { (f, v) ->
+                val on = f in selected
+                v.isSelected = on
+                (v.findViewWithTag<TextView>("check")).visibility = if (on) View.VISIBLE else View.INVISIBLE
             }
-            s.row(f.label, getString(title), getString(sub)) {
-                build(d, f, nameInput.text.toString().trim().ifBlank { d.name }, asCopy)
+            saveBtn.isEnabled = selected.isNotEmpty(); saveBtn.alpha = if (selected.isEmpty()) 0.4f else 1f
+            saveBtn.text = when (selected.size) {
+                0 -> getString(R.string.choose_a_format)
+                1 -> tr(R.string.save_as_format, selected.first().label)
+                else -> tr(R.string.save_n_formats, selected.size)
             }
         }
-        if (d.format == DocFormat.DOC) s.view(TextView(this).apply { setText(R.string.doc_note); textSize = 12f; setTextColor(ContextCompat.getColor(context, R.color.dim)) })
+        for (f in OutFormat.entries) {
+            val (title, sub) = formatText(d.format, f)
+            val card = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                setBackgroundResource(R.drawable.bg_stamp_row)
+                val p = (12 * dd).toInt(); setPadding(p, p, p, p)
+                isClickable = true
+                setOnClickListener { if (!selected.remove(f)) selected += f; paint() }
+            }
+            card.addView(Kit.chip(this, f.label.take(4)).apply { textSize = 12f }, LinearLayout.LayoutParams((46 * dd).toInt(), (40 * dd).toInt()))
+            val texts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding((12 * dd).toInt(), 0, (8 * dd).toInt(), 0) }
+            texts.addView(Kit.text(this, title, 15f, isBold = true))
+            texts.addView(Kit.text(this, sub, 12f, R.color.dim))
+            card.addView(texts, LinearLayout.LayoutParams(0, -2, 1f))
+            card.addView(Kit.text(this, "✓", 18f, R.color.gold, isBold = true).apply { tag = "check" })
+            cards[f] = card
+            s.view(card, 6)
+        }
+        if (d.format == DocFormat.DOC) s.view(Kit.text(this, getString(R.string.doc_note), 12f, R.color.dim), 6)
+        saveBtn = s.button("", true) {
+            if (selected.isEmpty()) return@button
+            s.dialog.dismiss()
+            build(d, OutFormat.entries.filter { it in selected }, nameInput.text.toString().trim().ifBlank { d.name }, asCopy)
+        }.apply { textSize = 16f }
+        s.view(saveBtn.apply { layoutParams = LinearLayout.LayoutParams(-1, (54 * dd).toInt()) }, 14)
+        s.view(s.button(getString(R.string.cancel), false) { s.dialog.dismiss() }, 8)
+        paint()
         s.show()
     }
 
-    private fun build(orig: LibDoc, f: DocFormat, name: String, asCopy: Boolean) {
+    /** Rubrik och undertext för ett format, beroende på originalet. */
+    private fun formatText(src: DocFormat, f: OutFormat): Pair<String, String> = when (f) {
+        OutFormat.PDF -> getString(R.string.format_pdf) to getString(R.string.format_pdf_sub)
+        OutFormat.DOCX -> getString(R.string.format_docx) to getString(when (src) {
+            DocFormat.DOCX -> R.string.format_docx_sub
+            DocFormat.DOC -> R.string.format_doc_to_docx_sub
+            else -> R.string.format_as_images_sub
+        })
+        OutFormat.ODT -> getString(R.string.format_odt) to getString(if (src == DocFormat.ODT) R.string.format_odt_sub else R.string.format_as_images_sub)
+        OutFormat.PNG -> getString(R.string.format_png) to getString(R.string.format_image_sub)
+        OutFormat.JPG -> getString(R.string.format_jpg) to getString(R.string.format_image_sub)
+    }
+
+    private fun build(orig: LibDoc, formats: List<OutFormat>, name: String, asCopy: Boolean) {
         val p = pages ?: return
         loading.visibility = View.VISIBLE
         loadingText.setText(R.string.exporting)
@@ -769,19 +814,45 @@ class DocumentActivity : BaseActivity(), PageView.Host {
                     list.adapter?.notifyDataSetChanged()
                 }
                 setTitle(d)
-                val out = File(File(cacheDir, "build").apply { deleteRecursively(); mkdirs() }, "signed.${f.ext}")
                 val done = fields.filter { it.done }
+                val ctx = this@DocumentActivity
                 withContext(Dispatchers.IO) {
-                    when (f) {
-                        DocFormat.DOCX -> Exporter.exportDocx(this@DocumentActivity, d.source, p as ImagePages, done, out)
-                        DocFormat.ODT -> Exporter.exportOdt(this@DocumentActivity, d.source, p as ImagePages, done, out)
-                        else -> Exporter.export(this@DocumentActivity, d.source, isPdf, p, done, out)
+                    val work = File(cacheDir, "build").apply { deleteRecursively(); mkdirs() }
+                    d.clearSigned()
+                    for (f in formats) {
+                        withContext(Dispatchers.Main) { loadingText.text = tr(R.string.exporting_format, f.label) }
+                        val out = File(work, "signed.${f.ext}")
+                        when (f) {
+                            OutFormat.PDF -> { Exporter.export(ctx, d.source, isPdf, p, done, out); d.addSigned(f, listOf(out)) }
+                            OutFormat.DOCX -> {
+                                when {
+                                    d.format == DocFormat.DOCX -> Exporter.exportDocx(ctx, d.source, p as ImagePages, done, out)
+                                    d.format == DocFormat.DOC && p is ImagePages -> {
+                                        // Riktig Word-fil med redigerbar text; signaturerna läggs på rätt sida
+                                        val ok = runCatching {
+                                            val plain = File(work, "converted.docx")
+                                            DocToDocx.convert(d.source, plain)
+                                            Exporter.exportDocx(ctx, plain, p, done, out)
+                                        }.isSuccess
+                                        if (!ok) ImageDocs.docx(ctx, p, done, out, d.name)
+                                    }
+                                    else -> ImageDocs.docx(ctx, p, done, out, d.name)
+                                }
+                                d.addSigned(f, listOf(out))
+                            }
+                            OutFormat.ODT -> {
+                                if (d.format == DocFormat.ODT) Exporter.exportOdt(ctx, d.source, p as ImagePages, done, out)
+                                else ImageDocs.odt(ctx, p, done, out)
+                                d.addSigned(f, listOf(out))
+                            }
+                            OutFormat.PNG, OutFormat.JPG ->
+                                d.addSigned(f, ImageDocs.images(ctx, p, done, File(work, "img-${f.ext}"), f == OutFormat.PNG))
+                        }
                     }
-                    d.setSigned(out, f.ext)
-                    d.makeThumb(this@DocumentActivity, cache.get(0))
+                    d.makeThumb(ctx, cache.get(0))
                 }
-                Toast.makeText(this@DocumentActivity, tr(R.string.saved_as_name, d.name), Toast.LENGTH_SHORT).show()
-                ShareSheet.show(this@DocumentActivity, d)
+                Toast.makeText(ctx, tr(R.string.saved_as_name, d.name), Toast.LENGTH_SHORT).show()
+                ShareSheet.show(ctx, d)
             } catch (e: Exception) {
                 Toast.makeText(this@DocumentActivity, R.string.export_failed, Toast.LENGTH_LONG).show()
             } finally {

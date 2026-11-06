@@ -439,6 +439,9 @@ class SettingsActivity : BaseActivity() {
         }
         card.addView(btnCheck, Kit.lp(c, top = 10))
         card.addView(Kit.switch(c, getString(R.string.update_auto), Prefs.autoUpdate(c)) { Prefs.setAutoUpdate(c, it) }, Kit.lp(c, top = 6))
+        card.addView(Kit.row(c, R.drawable.ic_manual, getString(R.string.manual), getString(R.string.manual_sub)) {
+            startActivity(Intent(c, ManualActivity::class.java))
+        }, Kit.lp(c, top = 4))
         card.addView(Kit.row(c, R.drawable.ic_whats_new, getString(R.string.update_whats_new), getString(R.string.whats_new_sub)) {
             startActivity(Intent(c, DevActivity::class.java))
         }, Kit.lp(c, top = 4))
