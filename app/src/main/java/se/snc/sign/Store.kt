@@ -58,8 +58,8 @@ object Store {
             Stamp(Seal.LOGO_ID, "S.N.C – Scandinavian Nexum Consulting", builtin = true, other = false),
             Stamp(Seal.ID, "Scandinavian Nexum Consulting AB", builtin = true, other = false),
         ) + bundledSeals(ctx) +
-            (stampDir(ctx).listFiles()?.filter { it.extension == "png" }?.sortedBy { it.lastModified() } ?: emptyList())
-                .map { Stamp(it.nameWithoutExtension, it.nameWithoutExtension.substringAfter('_').replace('-', ' '), builtin = false, other = true) }
+            (stampDir(ctx).listFiles()?.filter { it.extension == "png" && !it.name.endsWith(".orig.png") }?.sortedBy { it.name } ?: emptyList())
+                .map { Stamp(it.nameWithoutExtension, stampName(ctx, it.nameWithoutExtension), builtin = false, other = true) }
 
     fun stampBitmap(ctx: Context, id: String): Bitmap? =
         if (id == Seal.LOGO_ID) Seal.logo(ctx)
@@ -87,7 +87,30 @@ object Store {
         return id
     }
 
-    fun deleteStamp(ctx: Context, id: String) { File(stampDir(ctx), "$id.png").delete() }
+    fun deleteStamp(ctx: Context, id: String) {
+        File(stampDir(ctx), "$id.png").delete(); stampOrig(ctx, id).delete(); stampEdit(ctx, id).delete()
+    }
+
+    // ---- Egna loggor som kan redigeras igen ----
+
+    /** Originalbilden (utan ändringar) och stegen som gjordes, så att loggan kan redigeras igen utan kvalitetsförlust. */
+    fun stampOrig(ctx: Context, id: String) = File(stampDir(ctx), "$id.orig.png")
+    fun stampEdit(ctx: Context, id: String) = File(stampDir(ctx), "$id.edit.json")
+    fun stampFile(ctx: Context, id: String) = File(stampDir(ctx), "$id.png")
+
+    fun stampName(ctx: Context, id: String): String =
+        runCatching { org.json.JSONObject(stampEdit(ctx, id).readText()).optString("name") }.getOrNull()?.ifBlank { null }
+            ?: id.substringAfter('_').replace('-', ' ')
+
+    /** Sparar en redigerad logga (ny eller befintlig). Returnerar dess id. */
+    fun saveLogo(ctx: Context, id: String?, result: Bitmap, work: Bitmap, edit: org.json.JSONObject, name: String): String {
+        val safe = name.replace(Regex("[^A-Za-z0-9åäöÅÄÖ]+"), "-").trim('-').take(40).ifBlank { "logo" }
+        val sid = id ?: "${System.currentTimeMillis()}_$safe"
+        FileOutputStream(stampFile(ctx, sid)).use { scaleDown(result, 1600).compress(Bitmap.CompressFormat.PNG, 100, it) }
+        if (!stampOrig(ctx, sid).exists() || id == null) FileOutputStream(stampOrig(ctx, sid)).use { work.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        stampEdit(ctx, sid).writeText(edit.put("name", name).toString())
+        return sid
+    }
 
     fun scaleDown(b: Bitmap, max: Int): Bitmap {
         val s = minOf(1f, max.toFloat() / maxOf(b.width, b.height))

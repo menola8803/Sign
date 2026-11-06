@@ -26,6 +26,11 @@ Varje push till `main` bygger en ny APK med GitHub Actions. Öppna
 [Releases → senaste](https://github.com/menola8803/sign/releases/tag/senaste) på telefonen,
 ladda ner `Sign.apk` och installera. Appen kräver Android 10 eller nyare.
 
+Varje bygge ger två filer: `Sign.apk` (fast namn, samma länk varje gång) och `Sign-<version>.apk`.
+Alla tidigare versioner sparas som egna utgåvor under [Releases](https://github.com/menola8803/Sign/releases)
+(t.ex. `v1.3.12`) med en git-tagg på exakt den koden. Vid felsökning kan en äldre APK laddas ner, och en gren
+kan skapas från en version med `git switch -c fix v1.3.12`.
+
 Appen söker själv efter nya versioner (Inställningar → Uppdateringar, eller sidan Utveckling).
 
 ### Signeringsnyckel
@@ -37,7 +42,7 @@ APK installeras ovanpå den förra.
 
 ## Ny version
 
-1. Höj `version.txt` (t.ex. `1.2`).
+1. Höj `version.txt` (t.ex. `1.3`).
 2. Lägg en ny post överst i `changelog.json` med vad versionen innebär och innehåller, på svenska och engelska.
 3. Pusha till `main`. Appen visar uppdateringen och texterna på sidan Utveckling.
 

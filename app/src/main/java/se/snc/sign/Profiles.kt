@@ -26,6 +26,10 @@ class Profile(private val ctx: Context, val n: Int) {
 
     val sigFile get() = File(dir, "signature.png")
     val photoFile get() = File(dir, "photo.jpg")
+    /** Dragen från ritytan, så att signaturen kan öppnas och ändras igen. */
+    val strokesFile get() = File(dir, "strokes.json")
+    /** En fotad eller infogad signatur som grund att rita vidare på. */
+    val baseFile get() = File(dir, "base.png")
     val hasSignature get() = sigFile.exists()
     val hasPhoto get() = photoFile.exists()
 
@@ -84,25 +88,55 @@ class Profile(private val ctx: Context, val n: Int) {
     fun signature(): Bitmap? = sigFile.takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.path) }
     fun photo(): Bitmap? = photoFile.takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.path) }
 
+    /** Fotad eller infogad signatur: blir också grunden när man redigerar, tidigare drag tas bort. */
     fun saveSignature(b: Bitmap, source: String) {
         FileOutputStream(sigFile).use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        sigFile.copyTo(baseFile, overwrite = true)
+        strokesFile.delete()
         Composer.forget(sigFile.path)
         sigAt = System.currentTimeMillis(); sigSource = source
     }
 
-    fun saveSignatureFile(f: File, source: String) {
+    /** Ritad signatur från ritytan, med dragen så att den kan redigeras igen. */
+    fun saveSignatureFile(f: File, source: String, strokes: File? = null, baseKept: Boolean = false) {
+        // Äldre signatur utan sparade drag användes som grund: spara den som grund innan den skrivs över
+        if (baseKept && !baseFile.exists() && sigFile.exists()) sigFile.copyTo(baseFile, overwrite = true)
         f.copyTo(sigFile, overwrite = true)
+        if (strokes != null && strokes.exists()) strokes.copyTo(strokesFile, overwrite = true) else strokesFile.delete()
+        if (!baseKept) baseFile.delete()
         Composer.forget(sigFile.path)
         sigAt = System.currentTimeMillis(); sigSource = source
+    }
+
+    /** Öppnar ritytan för den här signaturen. Finns en signatur öppnas den så att man kan fortsätta eller ändra. */
+    fun drawIntent(c: Context, title: String, photoPath: String?): android.content.Intent =
+        android.content.Intent(c, SignActivity::class.java)
+            .putExtra(SignActivity.EXTRA_TITLE, title)
+            .putExtra(SignActivity.EXTRA_PHOTO_PATH, photoPath)
+            .putExtra(SignActivity.EXTRA_STROKES, strokesFile.takeIf { hasSignature && it.exists() }?.path)
+            .putExtra(SignActivity.EXTRA_BASE, when {
+                !hasSignature -> null
+                baseFile.exists() -> baseFile.path
+                strokesFile.exists() -> null
+                else -> sigFile.path // äldre signatur utan drag: visas som grund
+            })
+
+    /** Sparar resultatet från ritytan. Returnerar false om inget kom tillbaka. */
+    fun saveFromPad(data: android.content.Intent?): Boolean {
+        val path = data?.getStringExtra(SignActivity.EXTRA_FILE) ?: return false
+        val kept = data.getBooleanExtra(SignActivity.EXTRA_BASE_KEPT, false)
+        saveSignatureFile(File(path), if (kept) sigSource else SOURCE_DRAWN,
+            data.getStringExtra(SignActivity.EXTRA_STROKES)?.let { File(it) }, kept)
+        return true
     }
 
     fun savePhoto(b: Bitmap) {
-        FileOutputStream(photoFile).use { b.compress(Bitmap.CompressFormat.JPEG, 88, it) }
+        FileOutputStream(photoFile).use { b.compress(Bitmap.CompressFormat.JPEG, 94, it) }
         Composer.forget(photoFile.path)
         photoAt = System.currentTimeMillis()
     }
 
-    fun deleteSignature() { sigFile.delete(); Composer.forget(sigFile.path); sp.edit { remove("sig_at") } }
+    fun deleteSignature() { sigFile.delete(); strokesFile.delete(); baseFile.delete(); Composer.forget(sigFile.path); sp.edit { remove("sig_at") } }
     fun deletePhoto() { photoFile.delete(); Composer.forget(photoFile.path); sp.edit { remove("photo_at") } }
 
     /** Namnet som visas i listor: "Signatur 1 – Claes Sundman". */

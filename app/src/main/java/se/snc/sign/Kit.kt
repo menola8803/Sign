@@ -115,14 +115,24 @@ object Kit {
     }
 
     /** En klickbar rad med ikon, rubrik och undertext. */
-    fun row(c: Context, icon: String, title: CharSequence, sub: CharSequence? = null, chevron: Boolean = true, onClick: (() -> Unit)?): LinearLayout {
+    fun row(c: Context, icon: String, title: CharSequence, sub: CharSequence? = null, chevron: Boolean = true, onClick: (() -> Unit)?): LinearLayout =
+        row(c, chip(c, icon), title, sub, chevron, onClick)
+
+    /** Samma rad med en ritad ikon (vektor) i stället för ett tecken. */
+    fun row(c: Context, iconRes: Int, title: CharSequence, sub: CharSequence? = null, chevron: Boolean = true, onClick: (() -> Unit)?): LinearLayout =
+        row(c, android.widget.ImageView(c).apply {
+            setImageResource(iconRes); setBackgroundResource(R.drawable.bg_icon_chip)
+            scaleType = android.widget.ImageView.ScaleType.CENTER
+        }, title, sub, chevron, onClick)
+
+    private fun row(c: Context, iconView: View, title: CharSequence, sub: CharSequence?, chevron: Boolean, onClick: (() -> Unit)?): LinearLayout {
         val row = LinearLayout(c).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
             minimumHeight = dp(c, 56); setPadding(dp(c, 6), dp(c, 6), dp(c, 6), dp(c, 6))
             setBackgroundResource(R.drawable.bg_row)
             if (onClick != null) setOnClickListener { onClick() }
         }
-        row.addView(chip(c, icon), LinearLayout.LayoutParams(dp(c, 40), dp(c, 40)))
+        row.addView(iconView, LinearLayout.LayoutParams(dp(c, 40), dp(c, 40)))
         val texts = LinearLayout(c).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(c, 12), 0, dp(c, 6), 0) }
         texts.addView(text(c, title, 15.5f, isBold = true))
         if (sub != null) texts.addView(text(c, sub, 12.5f, R.color.dim))

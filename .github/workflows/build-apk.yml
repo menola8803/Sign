@@ -57,28 +57,45 @@ jobs:
       - name: Bygg APK
         run: gradle --no-daemon "$TASK"
 
-      - name: Döp om APK
-        run: cp "$APK" Sign.apk
+      - name: Döp om APK (Sign.apk och Sign-<version>.apk)
+        env:
+          RUN: ${{ github.run_number }}
+        run: |
+          VER="$(tr -d '[:space:]' < version.txt).$RUN"
+          echo "VER=$VER" >> "$GITHUB_ENV"
+          cp "$APK" Sign.apk
+          cp "$APK" "Sign-$VER.apk"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Sign-apk
-          path: Sign.apk
+          name: Sign-${{ env.VER }}
+          path: |
+            Sign.apk
+            Sign-${{ env.VER }}.apk
 
       - name: Publicera som nedladdning
         env:
           GH_TOKEN: ${{ github.token }}
           RUN: ${{ github.run_number }}
         run: |
-          VER="$(tr -d '[:space:]' < version.txt).$RUN"
           NOTES=$(printf 'Version: %s\nBuild: %s\nSignerad med fast nyckel: %s\n\nÖppna den här sidan på telefonen, ladda ner Sign.apk och installera.\nByggd från %s.' "$VER" "$RUN" "$SIGNED" "${GITHUB_SHA::7}")
-          # Byt ut filen i den befintliga utgåvan i stället för att ta bort och skapa om den.
-          # Då finns Sign.apk alltid kvar på länken, även om något steg skulle misslyckas.
+
+          # 1. En egen utgåva per version (v1.2.10) som sparas, med en git-tagg på exakt den koden.
+          #    Används vid felsökning eller för att göra en gren: git switch -c fix v$VER
+          OLD=$(printf 'Äldre version, sparad för felsökning.\n\nVersion: %s\nByggd från %s.\nGör en gren från den här versionen: git switch -c fix v%s' "$VER" "${GITHUB_SHA::7}" "$VER")
+          gh release create "v$VER" "Sign-$VER.apk" --target "$GITHUB_SHA" --title "Sign $VER" --notes "$OLD" --latest=false || \
+            gh release upload "v$VER" "Sign-$VER.apk" --clobber
+
+          # 2. "senaste": Sign.apk (fast länk, används av appens uppdatering) och aktuell Sign-<version>.apk.
+          #    Filerna byts ut på plats, så att länken aldrig försvinner.
           git tag -f senaste "$GITHUB_SHA"
           git push -f origin refs/tags/senaste
           if gh release view senaste >/dev/null 2>&1; then
-            gh release upload senaste Sign.apk --clobber
+            gh release upload senaste Sign.apk "Sign-$VER.apk" --clobber
+            for a in $(gh release view senaste --json assets --jq '.assets[].name'); do
+              case "$a" in Sign-*.apk) [ "$a" != "Sign-$VER.apk" ] && gh release delete-asset senaste "$a" --yes || true ;; esac
+            done
             gh release edit senaste --title "Sign $VER" --notes "$NOTES" --prerelease=false --latest
           else
-            gh release create senaste Sign.apk --latest --title "Sign $VER" --notes "$NOTES"
+            gh release create senaste Sign.apk "Sign-$VER.apk" --latest --title "Sign $VER" --notes "$NOTES"
           fi

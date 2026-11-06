@@ -43,10 +43,6 @@ object Seal {
         val bottom = Path().apply { addArc(RectF(38f, 38f, 362f, 362f), 180f, -180f) }
         c.drawTextOnPath("CONSULTING AB", bottom, 0f, 0f, text)
 
-        text.textSize = 24f; text.letterSpacing = 0f
-        c.drawText("★", 34f, 209f, text)
-        c.drawText("★", 366f, 209f, text)
-
         text.textSize = 60f; text.letterSpacing = 0.05f
         c.drawText("S.N.C", 200f, 212f, text)
         stroke.strokeWidth = 3f

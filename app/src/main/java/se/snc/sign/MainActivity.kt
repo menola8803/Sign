@@ -30,6 +30,7 @@ class MainActivity : BaseActivity() {
     private lateinit var savedTitle: TextView
     private lateinit var contactsSub: TextView
     private lateinit var updateDot: View
+    private lateinit var updateLine: TextView
 
     private val openLauncher = registerForActivityResult(OpenInDownloads()) { uri ->
         if (uri != null) startActivity(Intent(this, DocumentActivity::class.java).setData(uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
@@ -54,7 +55,7 @@ class MainActivity : BaseActivity() {
         // Loggan med ett mjukt sken bakom
         val head = LinearLayout(c).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
-            setBackgroundResource(R.drawable.bg_home_glow); setPadding(0, dp(40), 0, dp(8))
+            background = GlowDrawable(Kit.color(c, R.color.teal)); setPadding(0, dp(40), 0, dp(24))
         }
         head.addView(ImageView(c).apply {
             setImageResource(R.drawable.snc_header); adjustViewBounds = true; contentDescription = getString(R.string.company_full)
@@ -86,31 +87,39 @@ class MainActivity : BaseActivity() {
         recent = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL }
         screen.add(HorizontalScrollView(c).apply { isHorizontalScrollBarEnabled = false; addView(recent) })
 
-        // Kontakter och Uppdateringar
+        // Kontakter (Uppdateringar och Utvecklare finns i Inställningar)
         val more = Kit.card(c, 6)
         val contactsRow = Kit.row(c, "👥", getString(R.string.contacts), "") { startActivity(Intent(c, ContactsActivity::class.java)) }
         contactsSub = (contactsRow.getChildAt(1) as LinearLayout).getChildAt(1) as TextView
         more.addView(contactsRow)
-        val updRow = Kit.row(c, "↻", getString(R.string.updates_section), tr(R.string.version_line, UpdateChecker.currentVersionName(c))) {
-            startActivity(Intent(c, SettingsActivity::class.java))
-        }
-        updateDot = View(c).apply { setBackgroundResource(R.drawable.bg_dot); visibility = View.GONE }
-        updRow.addView(updateDot, 2, LinearLayout.LayoutParams(dp(10), dp(10)).apply { marginEnd = dp(8) })
-        more.addView(updRow)
         screen.add(more, 18)
 
-        screen.add(Kit.text(c, tr(R.string.footer_line, UpdateChecker.featureVersion(UpdateChecker.currentVersionName(c))), 12f, R.color.dim).apply {
-            gravity = Gravity.CENTER; setPadding(0, dp(22), 0, dp(6))
+        // Längst ner: "Sign 1.2" centrerat, och en kort rad när en ny version finns
+        screen.add(Kit.text(c, tr(R.string.footer_line, UpdateChecker.featureVersion(UpdateChecker.currentVersionName(c))), 12.5f, R.color.dim).apply {
+            gravity = Gravity.CENTER; setPadding(0, dp(24), 0, dp(2))
         })
+        updateLine = Kit.text(c, "", 12.5f, R.color.gold, isBold = true).apply {
+            gravity = Gravity.CENTER; setPadding(0, dp(4), 0, dp(8)); visibility = View.GONE
+            setBackgroundResource(R.drawable.bg_row)
+            setOnClickListener {
+                val url = Prefs.knownLatestUrl(c)
+                if (url.isNotBlank()) UpdateChecker.open(c, url) else startActivity(Intent(c, SettingsActivity::class.java))
+            }
+        }
+        screen.add(updateLine)
 
-        // Kugghjulet uppe till höger
+        // Kugghjulet uppe till höger, med en guldprick när en ny version finns
+        val gearBox = FrameLayout(c)
         val gear = ImageView(c).apply {
             setImageResource(R.drawable.ic_settings); setBackgroundResource(R.drawable.bg_round_button)
             val p = dp(10); setPadding(p, p, p, p); contentDescription = getString(R.string.settings); elevation = dp(4).toFloat()
             setOnClickListener { startActivity(Intent(c, SettingsActivity::class.java)) }
         }
-        screen.root.addView(gear, FrameLayout.LayoutParams(dp(44), dp(44), Gravity.TOP or Gravity.END).apply { topMargin = dp(10); rightMargin = dp(14) })
-        screen.show(gear)
+        gearBox.addView(gear, FrameLayout.LayoutParams(dp(44), dp(44)))
+        updateDot = View(c).apply { setBackgroundResource(R.drawable.bg_dot); visibility = View.GONE; elevation = dp(6).toFloat() }
+        gearBox.addView(updateDot, FrameLayout.LayoutParams(dp(11), dp(11), Gravity.TOP or Gravity.END))
+        screen.root.addView(gearBox, FrameLayout.LayoutParams(dp(46), dp(46), Gravity.TOP or Gravity.END).apply { topMargin = dp(10); rightMargin = dp(14) })
+        screen.show(gearBox)
 
         // Signs egen startskärm, i samma stil som Trace. Visas vid varje kallstart.
         if (savedInstanceState == null) {
@@ -126,6 +135,7 @@ class MainActivity : BaseActivity() {
         super.onResume()
         val n = runCatching { ContactBook.all(this).size }.getOrDefault(0)
         contactsSub.text = if (n == 0) getString(R.string.contacts_sub) else tr(R.string.contacts_count, n)
+        showUpdate()
         renderRecent()
     }
 
@@ -176,6 +186,14 @@ class MainActivity : BaseActivity() {
             .addOnFailureListener { Toast.makeText(this, R.string.scanner_failed, Toast.LENGTH_LONG).show() }
     }
 
+    /** Kort rad längst ner och guldprick på kugghjulet när en nyare version finns. */
+    private fun showUpdate() {
+        val newer = Prefs.knownLatestBuild(this) > UpdateChecker.currentBuild(this)
+        updateDot.visibility = if (newer) View.VISIBLE else View.GONE
+        updateLine.visibility = if (newer) View.VISIBLE else View.GONE
+        if (newer) updateLine.text = tr(R.string.new_version_available, UpdateChecker.featureVersion(Prefs.knownLatestName(this)), Prefs.knownLatestName(this))
+    }
+
     /** Söker efter ny version högst en gång per dygn, om det är påslaget i inställningarna. */
     private fun autoCheckForUpdate() {
         if (!Prefs.autoUpdate(this)) return
@@ -183,10 +201,8 @@ class MainActivity : BaseActivity() {
         lifecycleScope.launch {
             val latest = try { UpdateChecker.latest(this@MainActivity) } catch (e: Exception) { return@launch }
             Prefs.setLastUpdateCheck(this@MainActivity, System.currentTimeMillis())
-            if (latest.build > UpdateChecker.currentBuild(this@MainActivity)) {
-                updateDot.visibility = View.VISIBLE
-                UpdateChecker.offer(this@MainActivity, latest)
-            }
+            Prefs.setKnownLatest(this@MainActivity, latest.build, latest.versionName, latest.apkUrl)
+            showUpdate()
         }
     }
 }

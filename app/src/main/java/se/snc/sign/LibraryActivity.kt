@@ -157,9 +157,19 @@ class DocPreviewActivity : BaseActivity() {
             startActivity(Intent(c, DocumentActivity::class.java).putExtra(DocumentActivity.EXTRA_LIB_ID, d.id))
         }, 14)
         screen.add(Kit.buttonRow(c,
+            Kit.button(c, "✎  " + getString(R.string.rename)) { renameDoc() },
             Kit.button(c, getString(R.string.share)) { ShareSheet.show(c, d) { finish() } },
             Kit.button(c, getString(R.string.delete), danger = true) { ShareSheet.confirmDelete(c, d) { finish() } }), 8)
         screen.show()
+    }
+
+    /** Byt namn på dokumentet. */
+    private fun renameDoc() {
+        val input = Kit.input(this, getString(R.string.doc_name), doc.name, android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
+        Sheet(this).title(getString(R.string.rename)).view(input)
+            .buttons(getString(R.string.cancel), getString(R.string.save), {
+                doc.rename(input.text.toString()); build()
+            }).show()
     }
 
     /** Sidbilden med alla fält ritade ovanpå (osignerade fält som röda streckade rutor). */

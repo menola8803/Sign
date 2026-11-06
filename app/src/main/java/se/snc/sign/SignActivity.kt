@@ -26,6 +26,11 @@ class SignActivity : BaseActivity() {
         const val EXTRA_SHOW_PHOTO = "se.snc.sign.SHOW_PHOTO"
         /** Sökväg till fotot som visas bredvid ytan (signaturens profil). */
         const val EXTRA_PHOTO_PATH = "se.snc.sign.PHOTO_PATH"
+        /** Sparade drag att fortsätta på (in) och de nya dragen (ut). */
+        const val EXTRA_STROKES = "se.snc.sign.STROKES"
+        /** En fotad eller infogad signatur som ligger som grund (in). Ut: om grunden finns kvar. */
+        const val EXTRA_BASE = "se.snc.sign.BASE"
+        const val EXTRA_BASE_KEPT = "se.snc.sign.BASE_KEPT"
     }
 
     private lateinit var pad: SignatureView
@@ -69,11 +74,25 @@ class SignActivity : BaseActivity() {
         black.setOnClickListener { selectInk(Ink.BLACK) }
 
         val hint = findViewById<View>(R.id.signHint)
-        pad.onChange = { hint.visibility = if (pad.isEmpty) View.VISIBLE else View.INVISIBLE }
+        val undo = findViewById<View>(R.id.btnUndo)
+        val redo = findViewById<View>(R.id.btnRedo)
+        val clear = findViewById<View>(R.id.btnClear)
+        pad.onChange = {
+            hint.visibility = if (pad.isEmpty) View.VISIBLE else View.INVISIBLE
+            undo.isEnabled = pad.canUndo; undo.alpha = if (pad.canUndo) 1f else 0.4f
+            redo.isEnabled = pad.canRedo; redo.alpha = if (pad.canRedo) 1f else 0.4f
+            clear.isEnabled = !pad.isEmpty; clear.alpha = if (pad.isEmpty) 0.4f else 1f
+        }
+        pad.onChange()
+
+        // Redigera igen: grunden (fotad/infogad signatur) och de sparade dragen
+        intent.getStringExtra(EXTRA_BASE)?.let { p -> android.graphics.BitmapFactory.decodeFile(p)?.let { pad.base = it } }
+        intent.getStringExtra(EXTRA_STROKES)?.let { p -> File(p).takeIf { it.exists() }?.let { f -> pad.post { pad.loadStrokes(f) } } }
 
         findViewById<View>(R.id.btnCancel).setOnClickListener { finish() }
-        findViewById<View>(R.id.btnUndo).setOnClickListener { pad.undo() }
-        findViewById<View>(R.id.btnClear).setOnClickListener { pad.clear() }
+        undo.setOnClickListener { pad.undo() }
+        redo.setOnClickListener { pad.redo() }
+        clear.setOnClickListener { pad.clear() }
         findViewById<View>(R.id.btnDone).setOnClickListener { done() }
     }
 
@@ -84,7 +103,9 @@ class SignActivity : BaseActivity() {
             return
         }
         val f = Store.savePng(bmp, File(Store.signatureDir(this), "sig-${System.currentTimeMillis()}.png"))
-        setResult(RESULT_OK, Intent().putExtra(EXTRA_FIELD, intent.getLongExtra(EXTRA_FIELD, -1)).putExtra(EXTRA_FILE, f.path))
+        val strokes = File(f.path + ".json").also { pad.saveStrokes(it) }
+        setResult(RESULT_OK, Intent().putExtra(EXTRA_FIELD, intent.getLongExtra(EXTRA_FIELD, -1)).putExtra(EXTRA_FILE, f.path)
+            .putExtra(EXTRA_STROKES, strokes.path).putExtra(EXTRA_BASE_KEPT, pad.base != null))
         finish()
     }
 }

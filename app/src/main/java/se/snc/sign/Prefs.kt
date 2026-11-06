@@ -74,6 +74,13 @@ object Prefs {
     fun autoUpdate(ctx: Context): Boolean = sp(ctx).getBoolean(KEY_AUTO_UPDATE, true)
     fun setAutoUpdate(ctx: Context, on: Boolean) = sp(ctx).edit { putBoolean(KEY_AUTO_UPDATE, on) }
 
+    /** Senaste kända version på GitHub, så att hemskärmen kan visa "Ny version finns" utan att fråga varje gång. */
+    fun setKnownLatest(ctx: Context, build: Long, name: String, url: String) =
+        sp(ctx).edit { putLong("latest_build", build); putString("latest_name", name); putString("latest_url", url) }
+    fun knownLatestBuild(ctx: Context): Long = sp(ctx).getLong("latest_build", 0L)
+    fun knownLatestName(ctx: Context): String = sp(ctx).getString("latest_name", "") ?: ""
+    fun knownLatestUrl(ctx: Context): String = sp(ctx).getString("latest_url", "") ?: ""
+
     fun lastUpdateCheck(ctx: Context): Long = sp(ctx).getLong(KEY_LAST_UPDATE_CHECK, 0L)
     fun setLastUpdateCheck(ctx: Context, ts: Long) = sp(ctx).edit { putLong(KEY_LAST_UPDATE_CHECK, ts) }
 }

@@ -63,7 +63,7 @@
     <string name="ink_blue">Blått bläck</string>
     <string name="ink_black">Svart bläck</string>
 
-    <string name="camera_hint">Håll ansiktet inom ramen</string>
+    <string name="camera_hint">Håll ansiktet inuti ramen</string>
     <string name="camera_permission">Sign behöver kameran för att ta ditt foto.</string>
     <string name="camera_error">Kunde inte använda kameran.</string>
 
@@ -183,7 +183,7 @@ Vänliga hälsningar
     <string name="camera_back">Bakre kameran</string>
     <string name="choose_camera">Välj kamera</string>
     <string name="camera_flip">Byt ⟲</string>
-    <string name="camera_hint_sig2">Få plats med signaturen inom ramen</string>
+    <string name="camera_hint_sig2">Håll signaturen inuti ramen</string>
     <string name="sig2_section">SIGNATUR 2 (TILLVAL)</string>
     <string name="sig2_enable">Använd signatur 2</string>
     <string name="sig2_desc">En andra, färdig signatur: fota en signatur på papper eller infoga en bild från Hämtade filer (Download). Den kan sedan läggas på dokument utan att ritas. Av som standard.</string>
@@ -244,7 +244,7 @@ Vänliga hälsningar
     <string name="fill_in">Fyll i</string>
     <string name="fill_in_sub">Namn, e-post, telefon och företag</string>
     <string name="filter_all">Alla</string>
-    <string name="footer_line">Sign %1$s · Utvecklare: Claes Sundman</string>
+    <string name="footer_line">Sign %1$s</string>
     <string name="format_docx_sub">Samma format som originalet, kan redigeras vidare</string>
     <string name="format_odt">OpenDocument (.odt)</string>
     <string name="format_odt_sub">Samma format som originalet</string>
@@ -340,4 +340,48 @@ Vänliga hälsningar
     <string name="who_has_signed">Vem som signerar</string>
     <string name="without_photo">Utan foto</string>
     <string name="wrong_password">Fel lösenord</string>
+    <string name="backdrop_checker">Rutmönster</string>
+    <string name="backdrop_dark">Mörkt</string>
+    <string name="backdrop_paper">Vitt papper</string>
+    <string name="bg_less_more">Ta bort mindre  ←→  mer</string>
+    <string name="brush_size">Storlek</string>
+    <string name="camera_hint_logo">Håll loggan inuti ramen</string>
+    <string name="camera_no_af">Den här kameran kan inte fokusera nära. Använd den bakre kameran.</string>
+    <string name="contact_added">%1$s har lagts till i Kontakter</string>
+    <string name="contact_updated">%1$s har uppdaterats i Kontakter</string>
+    <string name="crop_help">Dra i hörnen för att beskära. Dra inne i ramen för att flytta den.</string>
+    <string name="crop_reset">Hela bilden</string>
+    <string name="doc_name">Dokumentets namn</string>
+    <string name="edit_logo">Redigera logga</string>
+    <string name="edit_signature">Ändra signaturen</string>
+    <string name="erase_help">Dra med fingret över det som ska bort. Det blir genomskinligt.</string>
+    <string name="logo_empty">Inget finns kvar av bilden. Ångra ett steg eller ta bort mindre bakgrund.</string>
+    <string name="logo_screen_tip">Tips: för en ikon på en dator blir en skärmdump som läses in från fil skarpast.</string>
+    <string name="new_version_available">Ny version %1$s finns · Uppdatera</string>
+    <string name="preview_on">Visa på</string>
+    <string name="preview_signature">Förhandsvisning av signatur</string>
+    <string name="redo">Gör om</string>
+    <string name="redo_arrow">Gör om ↷</string>
+    <string name="undo_arrow">↶ Ångra</string>
+    <string name="remove_background_sub">Tar bort bakgrunden som hänger ihop med kanterna. Färgerna i loggan behålls.</string>
+    <string name="rename">Byt namn</string>
+    <string name="restore_help">Dra med fingret för att få tillbaka delar av originalet.</string>
+    <string name="save_as_contact">Spara som kontakt</string>
+    <string name="save_as_copy">Spara som ny kopia</string>
+    <string name="save_as_copy_sub">Originalet och tidigare versioner finns kvar</string>
+    <string name="saved_as_name">Sparad som %1$s</string>
+    <string name="saved_ok">Sparat</string>
+    <string name="sig_file_formats">PNG, JPG/JPEG, BMP eller WEBP</string>
+    <string name="sig_from_file">Från fil</string>
+    <string name="sig_off_turn_on">Avstängd · slås på när du väljer den</string>
+    <string name="signature_saved">Signaturen är sparad</string>
+    <string name="tap_to_write_signature">Tryck här för att skriva din signatur</string>
+    <string name="tool_crop">Beskär</string>
+    <string name="tool_erase">Sudda</string>
+    <string name="tool_restore">Återställ</string>
+    <string name="tool_wand">Färg</string>
+    <string name="wand_everywhere">Överallt i bilden</string>
+    <string name="wand_everywhere_sub">Av: bara det sammanhängande området du trycker på</string>
+    <string name="wand_help">Tryck på en färg för att ta bort den. Liknande färger blir genomskinliga.</string>
+    <string name="wand_tolerance">Hur lika</string>
 </resources>

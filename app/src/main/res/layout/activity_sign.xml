@@ -140,7 +140,20 @@
             android:fontFamily="@font/jakarta_bold"
             android:gravity="center"
             android:paddingHorizontal="18dp"
-            android:text="@string/undo"
+            android:text="@string/undo_arrow"
+            android:textColor="@color/paper_ink"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/btnRedo"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_paper_pill"
+            android:fontFamily="@font/jakarta_bold"
+            android:gravity="center"
+            android:paddingHorizontal="18dp"
+            android:text="@string/redo_arrow"
             android:textColor="@color/paper_ink"
             android:textSize="14sp" />
 

@@ -38,8 +38,8 @@ class SettingsActivity : BaseActivity() {
     private var pendingProfile = 1
 
     private val drawLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
-        val path = r.data?.getStringExtra(SignActivity.EXTRA_FILE)
-        if (r.resultCode == RESULT_OK && path != null) Profile(this, pendingProfile).saveSignatureFile(File(path), Profile.SOURCE_DRAWN)
+        if (r.resultCode == RESULT_OK && Profile(this, pendingProfile).saveFromPad(r.data))
+            Toast.makeText(this, R.string.signature_saved, Toast.LENGTH_SHORT).show()
         renderSignatures()
     }
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { renderSignatures() }
@@ -167,17 +167,28 @@ class SettingsActivity : BaseActivity() {
 
         card.addView(Kit.divider(c))
 
-        // 1. Förhandsvisning med tid
-        card.addView(Kit.text(c, getString(R.string.preview), 13f, R.color.muted))
+        // 1. Förhandsvisning av signaturen. Tryck på fältet för att skriva eller ändra signaturen (samma för 1, 2 och 3).
+        card.addView(Kit.text(c, getString(R.string.preview_signature), 13f, R.color.muted))
         val previewRow = LinearLayout(c).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        val sigBox = android.widget.FrameLayout(c).apply {
+            setBackgroundResource(R.drawable.bg_paper_pad); isClickable = true; isFocusable = true
+            foreground = androidx.core.content.ContextCompat.getDrawable(c, R.drawable.bg_row)
+            contentDescription = getString(R.string.tap_to_write_signature)
+            setOnClickListener { draw(p) }
+        }
         val sigImg = ImageView(c).apply {
-            setBackgroundResource(R.drawable.bg_stamp); scaleType = ImageView.ScaleType.FIT_CENTER
+            scaleType = ImageView.ScaleType.FIT_CENTER
             val pad = dp(6); setPadding(pad, pad, pad, pad)
             val demo = Field(0, Field.Type.SIGN, 0, 0f, 0f, 1f, 1f, sigFile = p.sigFile.path.takeIf { p.hasSignature },
                 name = if (p.showName) p.signerName else "", date = if (p.showDate) Composer.today(c) else "")
             if (p.hasSignature) setImageBitmap(Composer.compose(c, demo, 900, 300))
         }
-        previewRow.addView(sigImg, LinearLayout.LayoutParams(0, dp(96), 1f))
+        sigBox.addView(sigImg, android.widget.FrameLayout.LayoutParams(-1, -1))
+        sigBox.addView(Kit.text(c, if (p.hasSignature) "✎" else "✍  " + getString(R.string.tap_to_write_signature), if (p.hasSignature) 15f else 13.5f, R.color.paper_ink, isBold = true).apply {
+            gravity = Gravity.CENTER; alpha = if (p.hasSignature) 0.55f else 0.8f; val pad = dp(6); setPadding(pad, pad, pad, pad)
+        }, android.widget.FrameLayout.LayoutParams(if (p.hasSignature) -2 else -1, if (p.hasSignature) -2 else -1,
+            if (p.hasSignature) Gravity.TOP or Gravity.END else Gravity.CENTER))
+        previewRow.addView(sigBox, LinearLayout.LayoutParams(0, dp(104), 1f))
         if (p.showPhoto) {
             val ph = ImageView(c).apply {
                 setBackgroundResource(R.drawable.bg_photo); clipToOutline = true; scaleType = ImageView.ScaleType.CENTER_CROP
@@ -193,13 +204,15 @@ class SettingsActivity : BaseActivity() {
             card.addView(Kit.text(c, "📷 $pt", 12.5f, if (p.hasPhoto) R.color.mint else R.color.dim), Kit.lp(c, top = 2))
         }
 
-        // Skapa signaturen: 1 ritas; 2 och 3 fotas på papper eller hämtas från Download
-        val sigButtons = if (p.n == 1) Kit.buttonRow(c,
-            Kit.button(c, getString(if (p.hasSignature) R.string.draw_new else R.string.draw_signature), primary = true) { draw(p) })
-        else Kit.buttonRow(c,
-            Kit.button(c, getString(R.string.sig_photo_paper), primary = true) { photographSig(p) },
-            Kit.button(c, getString(R.string.sig_from_downloads)) { pendingProfile = p.n; sigFileLauncher.launch(arrayOf("image/*")) })
-        card.addView(sigButtons, Kit.lp(c, top = 10))
+        // Alla signaturer ritas på samma sätt. 2 och 3 kan dessutom fotas på papper eller hämtas från en bildfil.
+        card.addView(Kit.buttonRow(c,
+            Kit.button(c, getString(if (p.hasSignature) R.string.edit_signature else R.string.draw_signature), primary = true) { draw(p) }), Kit.lp(c, top = 10))
+        if (p.n > 1) {
+            card.addView(Kit.buttonRow(c,
+                Kit.button(c, "📷  " + getString(R.string.sig_photo_paper)) { photographSig(p) },
+                Kit.button(c, "⤓  " + getString(R.string.sig_from_file)) { pendingProfile = p.n; sigFileLauncher.launch(SIG_MIMES) }), Kit.lp(c, top = 8))
+            card.addView(Kit.text(c, getString(R.string.sig_file_formats), 12f, R.color.dim), Kit.lp(c, top = 4))
+        }
         if (p.hasSignature) card.addView(Kit.button(c, getString(R.string.remove_signature), danger = true) {
             Sheet(this).title(getString(R.string.remove_signature), getString(R.string.remove_signature_confirm))
                 .buttons(getString(R.string.cancel), getString(R.string.remove), { p.deleteSignature(); renderSignatures() }, danger = true).show()
@@ -228,12 +241,40 @@ class SettingsActivity : BaseActivity() {
             if (p.camera == Camera.BACK) 1 else 0) { i -> p.camera = if (i == 1) Camera.BACK else Camera.FRONT }, Kit.lp(c, top = 6))
 
         card.addView(Kit.divider(c))
-        // 6. Vem som signerar
+        // 6. Vem som signerar. Sparas med knappen; den visar "Sparat ✓" när allt är sparat.
         card.addView(Kit.text(c, getString(R.string.who_has_signed), 13f, R.color.muted))
-        val name = Kit.input(c, getString(R.string.contact_name), p.signerName) { p.signerName = it }
-        val email = Kit.input(c, getString(R.string.contact_email_hint), p.signerEmail, InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS) { p.signerEmail = it }
-        val phone = Kit.input(c, getString(R.string.contact_phone_hint), p.signerPhone, InputType.TYPE_CLASS_PHONE) { p.signerPhone = it }
+        lateinit var saveBtn: TextView
+        val name = Kit.input(c, getString(R.string.contact_name), p.signerName) { markUnsaved(saveBtn) }
+        val email = Kit.input(c, getString(R.string.contact_email_hint), p.signerEmail, InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS) { markUnsaved(saveBtn) }
+        val phone = Kit.input(c, getString(R.string.contact_phone_hint), p.signerPhone, InputType.TYPE_CLASS_PHONE) { markUnsaved(saveBtn) }
         card.addView(name, Kit.lp(c, top = 6)); card.addView(email, Kit.lp(c, top = 8)); card.addView(phone, Kit.lp(c, top = 8))
+        val error = Kit.text(c, "", 12.5f, R.color.danger).apply { visibility = View.GONE }
+        card.addView(error, Kit.lp(c, top = 6))
+        fun validate(): Boolean {
+            val e = email.text.toString().trim()
+            val bad = e.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(e).matches()
+            error.setText(R.string.contact_bad_email); error.visibility = if (bad) View.VISIBLE else View.GONE
+            return !bad
+        }
+        saveBtn = Kit.button(c, "", primary = true) {
+            if (!validate()) return@button
+            p.signerName = name.text.toString(); p.signerEmail = email.text.toString(); p.signerPhone = phone.text.toString()
+            markSaved(saveBtn)
+            Toast.makeText(c, R.string.saved_ok, Toast.LENGTH_SHORT).show()
+            renderPreviewOnly(p, sigImg)
+        }
+        markSaved(saveBtn)
+        val saveContact = Kit.button(c, "＋  " + getString(R.string.save_as_contact)) {
+            if (!validate()) return@button
+            val n = name.text.toString().trim()
+            if (n.isBlank()) { Toast.makeText(c, R.string.contact_need_name, Toast.LENGTH_LONG).show(); return@button }
+            val e = email.text.toString().trim(); val ph = phone.text.toString().trim()
+            val existing = ContactBook.all(c).find { (e.isNotBlank() && it.email.equals(e, true)) || it.name.equals(n, true) }
+            val saved = runCatching { ContactBook.save(c, (existing ?: Contact(System.currentTimeMillis(), "", "", "")).copy(name = n, email = e, phone = ph)) }.getOrNull()
+            Toast.makeText(c, if (saved == null) getString(R.string.contact_save_failed)
+                else tr(if (existing != null) R.string.contact_updated else R.string.contact_added, n), Toast.LENGTH_LONG).show()
+        }
+        card.addView(Kit.buttonRow(c, saveBtn, saveContact), Kit.lp(c, top = 10))
         // 7. Hämta från kontakter
         card.addView(Kit.button(c, "👥  " + getString(R.string.choose_from_contacts)) {
             val list = ContactBook.all(c)
@@ -241,8 +282,9 @@ class SettingsActivity : BaseActivity() {
             if (list.isEmpty()) s.view(Kit.text(c, getString(R.string.no_contacts), 14f, R.color.dim))
             list.forEach { ct ->
                 s.row(ct.name.take(1).uppercase(), ct.name, listOf(ct.email, ct.phone).filter { it.isNotBlank() }.joinToString(" · ")) {
-                    p.signerName = ct.name; p.signerEmail = ct.email; p.signerPhone = ct.phone
                     name.setText(ct.name); email.setText(ct.email); phone.setText(ct.phone)
+                    p.signerName = ct.name; p.signerEmail = ct.email; p.signerPhone = ct.phone
+                    markSaved(saveBtn); renderPreviewOnly(p, sigImg)
                 }
             }
             s.show()
@@ -267,11 +309,26 @@ class SettingsActivity : BaseActivity() {
         else -> R.string.sig_drawn_at
     }
 
+    /** Öppnar ritytan. Finns en signatur öppnas den så att man kan fortsätta, ångra eller ändra en del. */
     private fun draw(p: Profile) {
         pendingProfile = p.n
-        drawLauncher.launch(Intent(this, SignActivity::class.java)
-            .putExtra(SignActivity.EXTRA_TITLE, p.label(this))
-            .putExtra(SignActivity.EXTRA_PHOTO_PATH, p.photoFile.takeIf { p.showPhoto && it.exists() }?.path))
+        drawLauncher.launch(p.drawIntent(this, p.label(this), p.photoFile.takeIf { p.showPhoto && it.exists() }?.path))
+    }
+
+    private fun markSaved(b: TextView) {
+        b.text = "✓  " + getString(R.string.saved_ok); b.isEnabled = false; b.alpha = 0.75f
+    }
+
+    private fun markUnsaved(b: TextView) {
+        b.text = getString(R.string.save); b.isEnabled = true; b.alpha = 1f
+    }
+
+    /** Uppdaterar bara förhandsvisningen (namnet under signaturen) utan att bygga om kortet. */
+    private fun renderPreviewOnly(p: Profile, img: ImageView) {
+        if (!p.hasSignature) return
+        val demo = Field(0, Field.Type.SIGN, 0, 0f, 0f, 1f, 1f, sigFile = p.sigFile.path,
+            name = if (p.showName) p.signerName else "", date = if (p.showDate) Composer.today(this) else "")
+        img.setImageBitmap(Composer.compose(this, demo, 900, 300))
     }
 
     private fun photographSig(p: Profile) {
@@ -311,6 +368,15 @@ class SettingsActivity : BaseActivity() {
                 setTextColor(Kit.color(c, if (isSel) R.color.gold else R.color.dim))
             }
             row.findViewById<View>(R.id.stampCheck).visibility = if (isSel) View.VISIBLE else View.GONE
+            if (!s.builtin) {
+                // ✎ Redigera: öppnar loggan igen (beskär, bakgrund, sudda m.m.) från originalet
+                val remove = row.findViewById<View>(R.id.stampRemove)
+                val parent = remove.parent as android.view.ViewGroup
+                parent.addView(Kit.chip(c, "✎").apply {
+                    contentDescription = getString(R.string.edit_logo)
+                    setOnClickListener { startActivity(Intent(c, ImportLogoActivity::class.java).putExtra(ImportLogoActivity.EXTRA_STAMP_ID, s.id)) }
+                }, parent.indexOfChild(remove), android.widget.LinearLayout.LayoutParams(dp(40), dp(40)).apply { marginEnd = dp(8) })
+            }
             row.findViewById<View>(R.id.stampRemove).apply {
                 visibility = if (s.builtin) View.GONE else View.VISIBLE
                 setOnClickListener {
@@ -328,7 +394,7 @@ class SettingsActivity : BaseActivity() {
         if (!otherHeader) { header(); box.addView(Kit.text(c, getString(R.string.other_seals_empty), 13f, R.color.dim)) }
         box.addView(Kit.text(c, getString(R.string.import_logo_desc), 12.5f, R.color.dim), Kit.lp(c, top = 14))
         box.addView(Kit.buttonRow(c,
-            Kit.button(c, getString(R.string.import_logo), primary = true) { logoFileLauncher.launch(arrayOf("image/*")) },
+            Kit.button(c, getString(R.string.import_logo), primary = true) { logoFileLauncher.launch(SIG_MIMES) },
             Kit.button(c, getString(R.string.photograph_logo)) {
                 logoCameraLauncher.launch(Intent(c, CameraActivity::class.java).putExtra(CameraActivity.EXTRA_TARGET, CameraActivity.TARGET_LOGO))
             }), Kit.lp(c, top = 8))
@@ -373,7 +439,7 @@ class SettingsActivity : BaseActivity() {
         }
         card.addView(btnCheck, Kit.lp(c, top = 10))
         card.addView(Kit.switch(c, getString(R.string.update_auto), Prefs.autoUpdate(c)) { Prefs.setAutoUpdate(c, it) }, Kit.lp(c, top = 6))
-        card.addView(Kit.row(c, "★", getString(R.string.update_whats_new), getString(R.string.whats_new_sub)) {
+        card.addView(Kit.row(c, R.drawable.ic_whats_new, getString(R.string.update_whats_new), getString(R.string.whats_new_sub)) {
             startActivity(Intent(c, DevActivity::class.java))
         }, Kit.lp(c, top = 4))
         return card
@@ -406,6 +472,7 @@ class SettingsActivity : BaseActivity() {
             try {
                 val r = UpdateChecker.latest(this@SettingsActivity)
                 Prefs.setLastUpdateCheck(this@SettingsActivity, System.currentTimeMillis())
+                Prefs.setKnownLatest(this@SettingsActivity, r.build, r.versionName, r.apkUrl)
                 latest = r
                 if (r.build > UpdateChecker.currentBuild(this@SettingsActivity)) {
                     updateStatus.text = tr(R.string.update_available, r.versionName)
@@ -424,6 +491,9 @@ class SettingsActivity : BaseActivity() {
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 }
+
+/** Bildformat som kan användas för en signatur eller logga från fil. */
+val SIG_MIMES = arrayOf("image/png", "image/jpeg", "image/jpg", "image/bmp", "image/x-ms-bmp", "image/webp")
 
 /** Öppnar filväljaren i mappen Hämtade filer (Download). */
 class OpenInDownloads : ActivityResultContracts.OpenDocument() {

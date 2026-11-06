@@ -90,7 +90,7 @@ class DocumentActivity : BaseActivity(), PageView.Host {
         if (r.resultCode != RESULT_OK || path == null) { dropIfEmpty(f); return@registerForActivityResult }
         val p = pendingProfile
         if (p != null) {
-            p.saveSignatureFile(File(path), Profile.SOURCE_DRAWN)
+            p.saveFromPad(r.data)
             fill(f, p, pendingPhoto)
         } else {
             // En kontakt signerar på den här telefonen: sparas inte som profil
@@ -108,7 +108,7 @@ class DocumentActivity : BaseActivity(), PageView.Host {
         if (r.resultCode == RESULT_OK && p.hasSignature) fill(f, p, pendingPhoto) else dropIfEmpty(f)
     }
 
-    private val sigFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+    private val sigFileLauncher = registerForActivityResult(OpenInDownloads()) { uri ->
         val f = pending ?: return@registerForActivityResult
         val p = pendingProfile ?: return@registerForActivityResult
         if (uri == null) { dropIfEmpty(f); return@registerForActivityResult }
@@ -452,7 +452,7 @@ class DocumentActivity : BaseActivity(), PageView.Host {
         s.view(s.button(getString(useLabel), true) { handled = true; s.dialog.dismiss(); fill(f, p, p.showPhoto) }
             .apply { layoutParams = LinearLayout.LayoutParams(-1, (48 * dd).toInt()) }, 14)
         val row1 = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        row1.addView(s.button(getString(if (p.n == 1) R.string.draw_new else R.string.new_signature), false) {
+        row1.addView(s.button(getString(R.string.edit_signature), false) {
             handled = true; s.dialog.dismiss(); newSignature(f, p, p.showPhoto)
         }, LinearLayout.LayoutParams(0, (44 * dd).toInt(), 1f).apply { marginEnd = (8 * dd).toInt() })
         row1.addView(s.button(getString(R.string.new_photo), false) {
@@ -495,24 +495,31 @@ class DocumentActivity : BaseActivity(), PageView.Host {
         return out
     }
 
-    /** Ny signatur: signatur 1 ritas på skärmen; 2 och 3 fotas på papper eller hämtas från Download. */
+    /**
+     * Ny eller ändrad signatur. Alla signaturer ritas på samma sätt (befintlig signatur öppnas så att den kan ändras).
+     * Signatur 2 och 3 kan dessutom fotas på papper eller hämtas från en bildfil.
+     */
     private fun newSignature(f: Field, p: Profile, withPhoto: Boolean) {
         pending = f; pendingProfile = p; pendingPhoto = withPhoto
-        if (p.n == 1) {
-            launchDraw(f, p.label(this), p.photoFile.takeIf { withPhoto && it.exists() }?.path)
-            return
-        }
+        val photo = p.photoFile.takeIf { withPhoto && it.exists() }?.path
+        if (p.n == 1) { launchDraw(f, p, photo); return }
         var handled = false
         val s = Sheet(this).title(tr(R.string.new_signature_n, p.n), p.signerName.ifBlank { null })
+            .row("✍", getString(if (p.hasSignature) R.string.edit_signature else R.string.draw_on_screen)) { handled = true; launchDraw(f, p, photo) }
             .row("📷", getString(R.string.sig_photo_paper), getString(if (p.camera == Camera.FRONT) R.string.camera_front else R.string.camera_back)) {
                 handled = true
                 cameraLauncher.launch(Intent(this, CameraActivity::class.java)
                     .putExtra(CameraActivity.EXTRA_TARGET, CameraActivity.TARGET_SIG2).putExtra(CameraActivity.EXTRA_PROFILE, p.n))
             }
-            .row("⤓", getString(R.string.sig_from_downloads)) { handled = true; sigFileLauncher.launch(arrayOf("image/*")) }
-            .row("✍", getString(R.string.draw_on_screen)) { handled = true; launchDraw(f, p.label(this), null) }
+            .row("⤓", getString(R.string.sig_from_file), getString(R.string.sig_file_formats)) { handled = true; sigFileLauncher.launch(SIG_MIMES) }
         s.dialog.setOnDismissListener { if (!handled) dropIfEmpty(f) }
         s.show()
+    }
+
+    private fun launchDraw(f: Field, p: Profile, photoPath: String?) {
+        val n = fields.filter { it.type == Field.Type.SIGN }.indexOf(f) + 1
+        signLauncher.launch(p.drawIntent(this, tr(R.string.sign_where, n, f.page + 1) + " · " + p.label(this), photoPath)
+            .putExtra(SignActivity.EXTRA_FIELD, f.id))
     }
 
     private fun launchDraw(f: Field, who: String, photoPath: String?) {
@@ -572,12 +579,23 @@ class DocumentActivity : BaseActivity(), PageView.Host {
         if (!f.done) { fields.remove(f); refresh(f.page); saveDoc(); updateHint() }
     }
 
-    /** Vem ska signera? Signatur 1, de påslagna signaturerna 2 och 3, eller en kontakt. */
+    /**
+     * Vem ska signera? Signatur 1, 2 och 3 (som syns i Inställningar) eller en kontakt.
+     * En avstängd signatur 2 visas också och slås på när man väljer den, så att alla signaturer går att använda
+     * i alla dokument (även fotograferade).
+     */
     private fun chooseSigner() {
         val s = Sheet(this).title(getString(R.string.who_signs))
-        for (p in Profile.usable(this)) {
-            val sub = if (p.hasSignature) tr(R.string.saved_at, Profile.stamp(this, p.sigAt)) else getString(R.string.no_signature_saved)
-            s.row(p.n.toString(), p.label(this), sub) { nextProfile = p; nextContact = null; setPlacing(Field.Type.SIGN) }
+        for (p in Profile.all(this).filter { it.visible }) {
+            val sub = when {
+                !p.enabled -> getString(R.string.sig_off_turn_on)
+                p.hasSignature -> tr(R.string.saved_at, Profile.stamp(this, p.sigAt))
+                else -> getString(R.string.no_signature_saved)
+            }
+            s.row(p.n.toString(), p.label(this), sub) {
+                if (!p.enabled) p.enabled = true
+                nextProfile = p; nextContact = null; setPlacing(Field.Type.SIGN)
+            }
         }
         for (c in ContactBook.all(this)) {
             s.row("👤", c.name, getString(R.string.draws_on_this_phone)) { nextProfile = null; nextContact = c; setPlacing(Field.Type.SIGN) }
@@ -703,34 +721,54 @@ class DocumentActivity : BaseActivity(), PageView.Host {
         } else go()
     }
 
-    /** Spara som: samma format som originalet först. Gamla .doc kan bara sparas som PDF. */
+    /**
+     * Spara som: namn (förifyllt), "Spara som ny kopia" och format. Samma format som originalet står först.
+     * Gamla .doc kan bara sparas som PDF.
+     */
     private fun chooseFormat(d: LibDoc) {
         val options = when (d.format) {
             DocFormat.DOCX -> listOf(DocFormat.DOCX, DocFormat.PDF)
             DocFormat.ODT -> listOf(DocFormat.ODT, DocFormat.PDF)
             else -> listOf(DocFormat.PDF)
         }
-        if (options.size == 1) { build(d, options[0]); return }
         val s = Sheet(this).title(getString(R.string.save_as_title), tr(R.string.original_name, d.name + "." + d.format.ext))
+        val nameInput = Kit.input(this, getString(R.string.doc_name), d.name, android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
+        s.view(Kit.text(this, getString(R.string.doc_name), 12.5f, R.color.dim), 8)
+        s.view(nameInput, 4)
+        var asCopy = d.signedFile != null
+        s.view(Kit.switch(this, getString(R.string.save_as_copy), asCopy, getString(R.string.save_as_copy_sub)) { asCopy = it }, 6)
+        s.view(Kit.text(this, getString(R.string.choose_format), 12.5f, R.color.dim), 12)
         for (f in options) {
             val (title, sub) = when (f) {
                 DocFormat.DOCX -> R.string.format_docx to R.string.format_docx_sub
                 DocFormat.ODT -> R.string.format_odt to R.string.format_odt_sub
                 else -> R.string.format_pdf to R.string.format_pdf_sub
             }
-            s.row(f.label, getString(title), getString(sub)) { build(d, f) }
+            s.row(f.label, getString(title), getString(sub)) {
+                build(d, f, nameInput.text.toString().trim().ifBlank { d.name }, asCopy)
+            }
         }
         if (d.format == DocFormat.DOC) s.view(TextView(this).apply { setText(R.string.doc_note); textSize = 12f; setTextColor(ContextCompat.getColor(context, R.color.dim)) })
         s.show()
     }
 
-    private fun build(d: LibDoc, f: DocFormat) {
+    private fun build(orig: LibDoc, f: DocFormat, name: String, asCopy: Boolean) {
         val p = pages ?: return
         loading.visibility = View.VISIBLE
         loadingText.setText(R.string.exporting)
         saveDoc()
         lifecycleScope.launch {
             try {
+                // Ny kopia med eget namn, eller samma dokument (eventuellt med nytt namn)
+                val d = withContext(Dispatchers.IO) {
+                    if (asCopy) orig.copyAs(this@DocumentActivity, name) else orig.also { if (name != it.name) it.rename(name) }
+                }
+                if (d !== orig) {
+                    doc = d
+                    fields.clear(); fields.addAll(d.fields)
+                    list.adapter?.notifyDataSetChanged()
+                }
+                setTitle(d)
                 val out = File(File(cacheDir, "build").apply { deleteRecursively(); mkdirs() }, "signed.${f.ext}")
                 val done = fields.filter { it.done }
                 withContext(Dispatchers.IO) {
@@ -742,7 +780,7 @@ class DocumentActivity : BaseActivity(), PageView.Host {
                     d.setSigned(out, f.ext)
                     d.makeThumb(this@DocumentActivity, cache.get(0))
                 }
-                Toast.makeText(this@DocumentActivity, R.string.saved_in_library, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DocumentActivity, tr(R.string.saved_as_name, d.name), Toast.LENGTH_SHORT).show()
                 ShareSheet.show(this@DocumentActivity, d)
             } catch (e: Exception) {
                 Toast.makeText(this@DocumentActivity, R.string.export_failed, Toast.LENGTH_LONG).show()

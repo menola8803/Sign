@@ -100,6 +100,28 @@ class LibDoc(val dir: File) {
 
     fun delete() = dir.deleteRecursively()
 
+    /** Byter namn på dokumentet (filnamnet när det delas). */
+    fun rename(newName: String) {
+        name = newName.trim().ifBlank { name }
+        save()
+    }
+
+    /**
+     * Sparar en kopia med nytt namn, så att originalet och tidigare signerade versioner finns kvar.
+     * Signaturer och foton följer med (sökvägarna pekar om till kopians mapp).
+     */
+    fun copyAs(ctx: Context, newName: String): LibDoc {
+        val dir2 = File(root(ctx), newId()).apply { mkdirs() }
+        dir.copyRecursively(dir2, overwrite = true)
+        val c = LibDoc(dir2)
+        val old = dir.path
+        c.fields = c.fields.onEach { f -> f.sigFile?.let { p -> if (p.startsWith(old)) f.sigFile = dir2.path + p.removePrefix(old) } }
+        c.name = newName.trim().ifBlank { name }
+        c.meta.put("created", System.currentTimeMillis())
+        c.save()
+        return c
+    }
+
     /** Ritar första sidan med alla fält som miniatyr. */
     fun makeThumb(ctx: Context, pageBitmap: Bitmap? = null) {
         val sizes = pageSizes
@@ -118,6 +140,8 @@ class LibDoc(val dir: File) {
     companion object {
         fun root(ctx: Context) = File(ctx.filesDir, "library").apply { mkdirs() }
 
+        private fun newId() = System.currentTimeMillis().toString(36) + (1000..9999).random()
+
         fun all(ctx: Context): List<LibDoc> =
             (root(ctx).listFiles()?.filter { File(it, "meta.json").exists() } ?: emptyList())
                 .map { LibDoc(it) }.sortedByDescending { it.updated }
@@ -125,7 +149,7 @@ class LibDoc(val dir: File) {
         fun get(ctx: Context, id: String): LibDoc? = File(root(ctx), id).takeIf { File(it, "meta.json").exists() }?.let { LibDoc(it) }
 
         fun create(ctx: Context, src: File, name: String, format: DocFormat): LibDoc {
-            val dir = File(root(ctx), System.currentTimeMillis().toString(36) + (1000..9999).random()).apply { mkdirs() }
+            val dir = File(root(ctx), newId()).apply { mkdirs() }
             val d = LibDoc(dir)
             d.name = name.substringBeforeLast('.').ifBlank { "document" }
             d.format = format

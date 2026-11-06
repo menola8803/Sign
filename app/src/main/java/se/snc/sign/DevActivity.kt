@@ -88,10 +88,10 @@ class DevActivity : BaseActivity() {
                 val mine = UpdateChecker.featureVersion(UpdateChecker.currentVersionName(this@DevActivity))
                 current.removeAllViews()
                 val installed = entries.find { UpdateChecker.compareVersions(it.version, mine) == 0 } ?: entries.firstOrNull()
-                installed?.let { current.addView(releaseCard(it, R.string.badge_installed, true)) }
+                installed?.let { current.addView(releaseCard(it, R.string.badge_installed, false)) }
                 val ahead = entries.filter { UpdateChecker.compareVersions(it.version, mine) > 0 }
                 newerTitle.visibility = if (ahead.isEmpty()) View.GONE else View.VISIBLE
-                ahead.forEach { newer.addView(releaseCard(it, R.string.badge_new, true)) }
+                ahead.forEach { newer.addView(releaseCard(it, R.string.badge_new, false)) }
                 val older = entries.filter { it != installed && UpdateChecker.compareVersions(it.version, mine) < 0 }
                 if (older.isEmpty()) prev.addView(line(getString(R.string.no_previous), R.color.dim))
                 else older.forEach { prev.addView(releaseCard(it, null, false)) }
@@ -160,6 +160,11 @@ class DevActivity : BaseActivity() {
                 findViewById<TextView>(R.id.chText).text = text
             })
         }
+        // Hopfälld från början; tryck på versionsnumret eller texten fäller ut (mjukt)
+        (card as android.view.ViewGroup).layoutTransition = android.animation.LayoutTransition().apply {
+            enableTransitionType(android.animation.LayoutTransition.CHANGING)
+        }
+        card.findViewById<View>(R.id.relHead).contentDescription = "v${e.version} ${e.title}"
         fun set(o: Boolean) { body.visibility = if (o) View.VISIBLE else View.GONE; arrow.text = if (o) "⌄" else "›" }
         set(open)
         card.findViewById<View>(R.id.relHead).setOnClickListener { set(body.visibility != View.VISIBLE) }

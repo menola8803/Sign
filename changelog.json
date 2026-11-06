@@ -4,6 +4,111 @@
   "note": "Versionshistorik på svenska och engelska. Appen och webbversionen läser den här filen. Lägg nya versioner överst och höj version.txt.",
   "releases": [
     {
+      "version": "1.3",
+      "date": "2026-11-06",
+      "title": {
+        "sv": "Skarpare kamera, loggverktyg och redigerbara signaturer",
+        "en": "Sharper camera, logo tools and editable signatures"
+      },
+      "summary": {
+        "sv": "Kameran tar nu bilder i högsta kvalitet med autofokus, tryck för att fokusera och nyp för att zooma. Loggor får ett eget bildverktyg: beskär, ta bort bakgrund, sudda, återställ och ta bort samma färg, med Ångra och Gör om. Det som blir kvar behåller sina färger och resten blir genomskinligt. Alla signaturer ritas på samma sätt och kan öppnas och ändras igen.",
+        "en": "The camera now takes pictures in top quality with autofocus, tap to focus and pinch to zoom. Logos get their own image tool: crop, remove background, erase, restore and remove a colour, with Undo and Redo. What is kept keeps its colours and the rest becomes transparent. All signatures are drawn the same way and can be opened and changed again."
+      },
+      "changes": [
+        {
+          "type": "fixed",
+          "text": {
+            "sv": "Kameran: högsta upplösning, autofokus, tryck för att fokusera, nyp med två fingrar för att zooma och skärpan låses innan bilden tas.",
+            "en": "Camera: highest resolution, autofocus, tap to focus, pinch with two fingers to zoom, and focus is locked before the picture is taken."
+          }
+        },
+        {
+          "type": "fixed",
+          "text": {
+            "sv": "Bakgrundsborttagningen ger inte längre streck. Den klarar ojämnt ljus, skuggor och skärmmönster.",
+            "en": "Background removal no longer leaves lines. It handles uneven light, shadows and screen patterns."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Bildverktyg för loggor: beskär, sudda, återställ, ta bort samma färg, Ångra och Gör om, zoom. Förhandsvisning på rutmönster, vitt papper och mörkt.",
+            "en": "Image tools for logos: crop, erase, restore, remove a colour, Undo and Redo, zoom. Preview on checkered, white paper and dark."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Sparade loggor kan redigeras igen (✎) från originalet.",
+            "en": "Saved logos can be edited again (✎) from the original."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Signatur 1, 2 och 3: tryck på förhandsvisningen för att skriva eller ändra signaturen. Ångra och Gör om i många steg.",
+            "en": "Signatures 1, 2 and 3: tap the preview to write or change the signature. Undo and Redo in many steps."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Vem signerar: Spara-knapp som visar Sparat, och Spara som kontakt.",
+            "en": "Who signs: a Save button that shows Saved, and Save as contact."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Signatur från fil: PNG, JPG/JPEG, BMP och WEBP.",
+            "en": "Signature from file: PNG, JPG/JPEG, BMP and WEBP."
+          }
+        },
+        {
+          "type": "new",
+          "text": {
+            "sv": "Spara som ny kopia med eget namn, och byt namn på sparade dokument.",
+            "en": "Save as a new copy with its own name, and rename saved documents."
+          }
+        },
+        {
+          "type": "fixed",
+          "text": {
+            "sv": "Fotograferade dokument kan signeras med signatur 2 och 3, inte bara 1.",
+            "en": "Photographed documents can be signed with signature 2 and 3, not only 1."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Hemskärmen: mjuk övergång under loggan, bara Sign och versionen längst ner, och en kort rad när en ny version finns.",
+            "en": "Home screen: soft fade under the logo, only Sign and the version at the bottom, and a short line when a new version is available."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Vad är nytt: versionerna är hopfällda och fälls ut med ett tryck. Ny ikon.",
+            "en": "What's new: versions are collapsed and open with a tap. New icon."
+          }
+        },
+        {
+          "type": "fixed",
+          "text": {
+            "sv": "Sigillet Scandinavian Nexum Consulting AB har inte längre två stjärnor.",
+            "en": "The Scandinavian Nexum Consulting AB seal no longer has two stars."
+          }
+        },
+        {
+          "type": "improved",
+          "text": {
+            "sv": "Rätt text i kameran för logga, signatur och foto, på svenska och engelska.",
+            "en": "Correct camera text for logo, signature and photo, in Swedish and English."
+          }
+        }
+      ]
+    },
+    {
       "version": "1.2",
       "date": "2026-11-05",
       "title": {

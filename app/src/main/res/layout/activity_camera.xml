@@ -19,6 +19,29 @@
         android:layout_marginBottom="60dp"
         android:background="@drawable/bg_camera_frame" />
 
+    <!-- Ring där man tryckte för att fokusera -->
+    <View
+        android:id="@+id/focusRing"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:background="@drawable/bg_focus_ring"
+        android:visibility="invisible" />
+
+    <!-- Zoomnivå när man nyper med två fingrar -->
+    <TextView
+        android:id="@+id/zoomLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="150dp"
+        android:background="@drawable/bg_hint"
+        android:fontFamily="@font/jakarta_bold"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="6dp"
+        android:textColor="@color/gold"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/cameraHint"
         android:layout_width="wrap_content"
@@ -28,6 +51,8 @@
         android:background="@drawable/bg_hint"
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp"
+        android:layout_marginHorizontal="20dp"
+        android:gravity="center"
         android:text="@string/camera_hint"
         android:textColor="@color/gold_pale"
         android:textSize="13sp" />

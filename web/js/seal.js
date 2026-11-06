@@ -15,8 +15,6 @@ export function sealSVG(color = '#1d3a8a') {
   <g fill="${color}" font-family="Georgia, 'Times New Roman', serif" font-weight="700">
     <text font-size="27" letter-spacing="2.2" text-anchor="middle"><textPath href="#top" startOffset="50%">SCANDINAVIAN NEXUM</textPath></text>
     <text font-size="27" letter-spacing="2.2" text-anchor="middle" dominant-baseline="hanging"><textPath href="#bot" startOffset="50%">CONSULTING AB</textPath></text>
-    <text x="38" y="210" font-size="26" text-anchor="middle">★</text>
-    <text x="362" y="210" font-size="26" text-anchor="middle">★</text>
     <text x="200" y="210" font-size="62" text-anchor="middle" letter-spacing="3">S.N.C</text>
     <text x="200" y="258" font-size="30" text-anchor="middle" letter-spacing="8">AB</text>
   </g>
